@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-class Task
+final class Task
 {
-    const STATUS_NEW = 'new';
-    const STATUS_CANCELED = 'canceled';
-    const STATUS_IN_PROGRESS = 'in_progress';
-    const STATUS_COMPLETED = 'completed';
-    const STATUS_FAILED = 'failed';
+    public const STATUS_NEW = 'new';
+    public const STATUS_CANCELED = 'canceled';
+    public const STATUS_IN_PROGRESS = 'in_progress';
+    public const STATUS_COMPLETED = 'completed';
+    public const STATUS_FAILED = 'failed';
 
-    const ACTION_CREATE = 'create';
-    const ACTION_CANCEL = 'cancel';
-    const ACTION_BID = 'bid'; // ?
-    const ACTION_ASSIGN = 'assign';
-    const ACTION_COMPLETE = 'complete';
-    const ACTION_REFUSE = 'refuse';
+    public const ACTION_CREATE = 'create'; // ?
+    public const ACTION_CANCEL = 'cancel';
+    public const ACTION_BID = 'bid'; // ?
+    public const ACTION_ASSIGN = 'assign';
+    public const ACTION_COMPLETE = 'complete';
+    public const ACTION_REFUSE = 'refuse';
 
-    const USER_ROLE_CUSTOMER = 'customer';
-    const USER_ROLE_EXECUTOR = 'executor';
+    public const USER_ROLE_CUSTOMER = 'customer';
+    public const USER_ROLE_EXECUTOR = 'executor';
 
     private static array $statusMap = [
         self::STATUS_NEW => 'Новое',
@@ -85,7 +85,12 @@ class Task
             $this->customerId = $customerId;
             $this->executorId = $executorId > 0 ? $executorId : null;
         } else {
-            throw new InvalidArgumentException('Invalid task data');
+            throw new InvalidArgumentException(sprintf(
+                'Invalid task data (status: %s, customerId: %d, executorId: %s)',
+                $status,
+                $customerId,
+                $executorId === null ? 'null' : (string) $executorId
+            ));
         }
     }
 
@@ -101,6 +106,7 @@ class Task
         if ($this->status === self::STATUS_NEW) {
             if ($userRole === self::USER_ROLE_CUSTOMER) {
                 $availableActions[] = self::ACTION_CANCEL;
+                $availableActions[] = self::ACTION_ASSIGN;
             } else {
                 $availableActions[] = self::ACTION_BID;
             }
@@ -115,38 +121,14 @@ class Task
         return $availableActions;
     }
 
-    public function create(): string|false
+    public function act(string $action, string $userRole): string
     {
-        return $this->status = self::STATUS_NEW;
-    }
-
-    public function cancel(): string|false
-    {
-        return $this->status = self::STATUS_CANCELED;
-    }
-
-    public function bid(): string|false
-    {
-        return $this->status;
-    }
-
-    public function assign(int $executorId): string|false
-    {
-        if ($executorId > 0) {
-            $this->executorId = $executorId;
-            return $this->status = self::STATUS_IN_PROGRESS;
+        if (!in_array($action, $this->getAvailableActions($userRole), true)) {
+            throw new RuntimeException("Cannot perform $action by $userRole on status {$this->status}");
         }
 
-        return $this->executorId === $executorId ? $this->status : false;
-    }
+        $this->status = self::getActionNextStatus($action) ?: $this->status;
 
-    public function complete(): string|false
-    {
-        return $this->status = self::STATUS_COMPLETED;
-    }
-
-    public function refuse(): string|false
-    {
-        return $this->status = self::STATUS_FAILED;
+        return $this->status;
     }
 }
