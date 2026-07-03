@@ -99,31 +99,53 @@ final class Task
         return $this->status;
     }
 
-    public function getAvailableActions(string $userRole): array
+    public function getAvailableActions(): array
     {
         $availableActions = [];
 
         if ($this->status === self::STATUS_NEW) {
-            if ($userRole === self::USER_ROLE_CUSTOMER) {
-                $availableActions[] = self::ACTION_CANCEL;
-                $availableActions[] = self::ACTION_ASSIGN;
-            } else {
-                $availableActions[] = self::ACTION_BID;
-            }
+            $availableActions = [
+                self::ACTION_CANCEL,
+                self::ACTION_BID,
+                self::ACTION_ASSIGN,
+            ];
         } elseif ($this->status === self::STATUS_IN_PROGRESS) {
-            if ($userRole === self::USER_ROLE_CUSTOMER) {
-                $availableActions[] = self::ACTION_COMPLETE;
-            } else {
-                $availableActions[] = self::ACTION_REFUSE;
-            }
+            $availableActions = [
+                self::ACTION_COMPLETE,
+                self::ACTION_REFUSE,
+            ];
         }
 
         return $availableActions;
     }
 
+    public function getAllowedActions(string $userRole): array
+    {
+        $allowedActions = [];
+
+        if ($userRole === self::USER_ROLE_CUSTOMER) {
+            $allowedActions = [
+                self::ACTION_CREATE,
+                self::ACTION_CANCEL,
+                self::ACTION_ASSIGN,
+                self::ACTION_COMPLETE,
+            ];
+        } elseif ($userRole === self::USER_ROLE_EXECUTOR) {
+            $allowedActions = [
+                self::ACTION_BID,
+                self::ACTION_REFUSE,
+            ];
+        }
+
+        return $allowedActions;
+    }
+
     public function act(string $action, string $userRole): string
     {
-        if (!in_array($action, $this->getAvailableActions($userRole), true)) {
+        if (
+            !in_array($action, $this->getAvailableActions(), true)
+            || !in_array($action, $this->getAllowedActions($userRole), true)
+        ) {
             throw new RuntimeException("Cannot perform $action by $userRole on status {$this->status}");
         }
 
