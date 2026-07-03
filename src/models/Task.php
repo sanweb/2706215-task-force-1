@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+namespace Sanweb\Taskforce\models;
+
+use RuntimeException;
+use InvalidArgumentException;
+
 final class Task
 {
     public const STATUS_NEW = 'new';

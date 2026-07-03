@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/Task.php';
+use Sanweb\Taskforce\models\Task;
+
+require_once __DIR__ . '/vendor/autoload.php';
 
 // helper for negative scenarios that throws RuntimeException
 function assertRuntimeException(callable $callback, string $message): void
