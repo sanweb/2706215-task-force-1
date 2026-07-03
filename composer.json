@@ -1,0 +1,16 @@
+{
+    "name": "sanweb/taskforce",
+    "description": "TaskForce PHP/Yii2 learning project",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Sanweb\\Taskforce\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "sanweb"
+        }
+    ],
+    "require": {}
+}
