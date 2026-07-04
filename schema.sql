@@ -4,6 +4,8 @@ CREATE DATABASE IF NOT EXISTS taskforce_db
 
 USE taskforce_db;
 
+-- TODO: Add CONSTRAINTs
+
 -- User
 CREATE TABLE IF NOT EXISTS `user` (
     `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
