@@ -1,8 +1,8 @@
-CREATE DATABASE IF NOT EXISTS yeticave
+CREATE DATABASE IF NOT EXISTS taskforce_db
     DEFAULT CHARACTER SET utf8mb4
     DEFAULT COLLATE utf8mb4_0900_ai_ci;
 
-USE yeticave;
+USE taskforce_db;
 
 -- User
 CREATE TABLE IF NOT EXISTS `user` (
