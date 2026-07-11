@@ -4,201 +4,269 @@ CREATE DATABASE IF NOT EXISTS taskforce_db
 
 USE taskforce_db;
 
--- TODO: Add CONSTRAINTs
+-- City dictionary the first table because of user.city_id FK
+CREATE TABLE IF NOT EXISTS `city` (
+    `id`    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `name`  VARCHAR(255)    NOT NULL,
+    `lat`   DECIMAL(10,7)   NOT NULL,
+    `lng`   DECIMAL(10,7)   NOT NULL,
 
--- User
-CREATE TABLE IF NOT EXISTS `user` (
-    `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `email`         VARCHAR(255) NOT NULL,
-    `name`          VARCHAR(128) NOT NULL,
-    `password_hash` VARCHAR(255) NOT NULL,
-    `city_id`       INT UNSIGNED NOT NULL, -- FK city.id
-
-    -- avatar field should be placed here if only users with excutor role have user_profile
-    -- otherwise we shoud create two separate tables: customer_profile and executor_profile
-    `avatar`        VARCHAR(255) NULL, -- profile image path (uploads/user/avatar/hashed_image_name.ext)
-
-    -- checkbox я собираюсь откликаться на заказы (role = executor, user has executor_stats and user_profile|executor_profile)
-    -- `can_bid`       TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
-    `role`          ENUM('customer', 'executor') NOT NULL,
-
-    -- register_way (enum and separate table for OAuth registrations)?
-
-    `created_at`    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`    TIMESTAMP    NULL, -- managed by application model
-
-    UNIQUE KEY `uq_user_email` (`email`)
+    UNIQUE INDEX `uq_city_name` (`name`)
 
 ) ENGINE=InnoDB;
 
--- User profile (executor_profile?)
+-- User
+CREATE TABLE IF NOT EXISTS `user` (
+    `id`            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, -- bigint | uuid 7-9 ver for all tables in db
+    `email`         VARCHAR(255)    NOT NULL, -- unique
+    `name`          VARCHAR(128)    NOT NULL,
+    `password`      VARCHAR(255)    NULL, -- not null if user have to enter login/password during OAuth registration?
+    `city_id`       BIGINT UNSIGNED NULL, -- FK city.id
+
+    `avatar`        VARCHAR(255)    NULL, -- user image path (uploads/user/avatar/hashed_image_name.ext)
+    `birthday`      DATE            NULL, -- valid date
+
+    -- checkbox я собираюсь откликаться на заказы (all users can create task, but only executors can bid)
+    `is_executor`   BOOLEAN         NOT NULL DEFAULT FALSE,
+
+    `created_at`    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`    TIMESTAMP       NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+    UNIQUE INDEX `uq_user_email` (`email`),
+    -- CONSTRAINT `uq_user_email`
+    --    UNIQUE (`email`),
+
+    -- CONSTRAINT `chk_user_is_executor`
+        CHECK (`is_executor` IN (FALSE, TRUE)), -- or CHECK (`is_executor` IN (0, 1)), ?
+
+    CONSTRAINT `fk_user_city`
+        FOREIGN KEY (`city_id`)
+        REFERENCES `city` (`id`)
+
+) ENGINE=InnoDB;
+
+-- Executor profile
 -- ТЗ: Страница для показа подробной информации об исполнителе. Страница предназначена только для показа профилей исполнителей.
 -- ТЗ: Соответственно, если этот пользователь не является исполнителем, то страница должна быть недоступна: вместо неё надо показывать ошибку 404.
-CREATE TABLE IF NOT EXISTS `user_profile` (
-    `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `user_id`       INT UNSIGNED NOT NULL, -- FK user.id
+CREATE TABLE IF NOT EXISTS `executor_profile` (
+    `id`            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, -- use user_id instead?
+    `user_id`       BIGINT UNSIGNED NOT NULL, -- FK user.id
 
-    -- `avatar`        VARCHAR(255) NULL, -- image path (uploads/user/avatar/hashed_image_name.ext)
-    `birthday`      DATE         NULL, -- valid date
-    `phone`         VARCHAR(20)  NULL, -- 11 numbers
-    `telegram`      VARCHAR(64)  NULL, -- up to 64 chars without @
-    `about`         TEXT         NULL, -- about me
+    `phone`         VARCHAR(20)     NULL, -- 11 numbers
+    `telegram`      VARCHAR(64)     NULL, -- up to 64 chars without @
+    `about`         TEXT            NULL, -- about me
 
-    `hide_my_contacts` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0, -- profile option отключить показ своих контактных данных для всех, кроме заказчика
+    -- отключить показ своих контактных данных для всех, кроме заказчика
+    `hide_my_contacts` BOOLEAN      NOT NULL DEFAULT FALSE,
 
-    `created_at`    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`    TIMESTAMP    NULL, -- managed by application model
+    `created_at`    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`    TIMESTAMP       NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
 
-    UNIQUE KEY `uq_user_id` (`user_id`)
+    UNIQUE INDEX `uq_user_id` (`user_id`),
+    -- CONSTRAINT `uq_executor_profile_user_id`
+    --    UNIQUE (`user_id`),
+
+    -- CONSTRAINT `chk_executor_profile_hide_contacts`
+    --    CHECK (`hide_my_contacts` IN (0, 1)),
+        CHECK (`hide_my_contacts` IN (FALSE, TRUE)),
+
+    CONSTRAINT `fk_executor_profile_user`
+        FOREIGN KEY (`user_id`)
+        REFERENCES `user` (`id`)
 
 ) ENGINE=InnoDB;
 
 -- Category
 CREATE TABLE IF NOT EXISTS `category` (
-    `id`    INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `name`  VARCHAR(64)  NOT NULL,
-    `slug`  VARCHAR(64)  NOT NULL,
+    `id`    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `name`  VARCHAR(64)     NOT NULL,
+    `slug`  VARCHAR(64)     NOT NULL,
 
-    UNIQUE KEY `uq_category_name` (`name`),
-    UNIQUE KEY `uq_category_slug` (`slug`)
+    UNIQUE INDEX `uq_category_name` (`name`),
+    UNIQUE INDEX `uq_category_slug` (`slug`)
+
+    -- CONSTRAINT `uq_category_name`
+    --    UNIQUE (`name`),
+
+    -- CONSTRAINT `uq_category_slug`
+    --    UNIQUE (`slug`)
 
 ) ENGINE=InnoDB;
 
--- Executor specialization (user-to-category)
-CREATE TABLE IF NOT EXISTS `user_specialization` (
-    `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `user_id`       INT UNSIGNED NOT NULL, -- FK user.id
-    `category_id`   INT UNSIGNED NOT NULL, -- FK category.id
+-- Executor specialization (user-to-category or executor_profile-to-category ON executor_profile_id?)
+CREATE TABLE IF NOT EXISTS `executor_specialization` (
+    `id`            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `user_id`       BIGINT UNSIGNED NOT NULL, -- FK user.id
+    `category_id`   BIGINT UNSIGNED NOT NULL, -- FK category.id
 
-    `created_at`    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `created_at`    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    UNIQUE KEY `uq_user_category` (`user_id`, `category_id`),
-    KEY `idx_user_specialization_user_id` (`user_id`),
-    KEY `idx_user_specialization_category_id` (`category_id`)
+    UNIQUE INDEX `uq_user_category` (`user_id`, `category_id`),
+    -- CONSTRAINT `uq_executor_specialization_user_category`
+    --    UNIQUE (`user_id`, `category_id`),
+
+    CONSTRAINT `fk_executor_specialization_user`
+        FOREIGN KEY (`user_id`)
+        REFERENCES `user` (`id`),
+
+    CONSTRAINT `fk_executor_specialization_category`
+        FOREIGN KEY (`category_id`)
+        REFERENCES `category` (`id`)
 
 ) ENGINE=InnoDB;
 
 -- Task
 CREATE TABLE IF NOT EXISTS `task` (
-    `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `customer_id`   INT UNSIGNED NOT NULL, -- FK user.id
-    `category_id`   INT UNSIGNED NOT NULL, -- FK category.id
-    `executor_id`   INT UNSIGNED NULL,     -- FK user.id
+    `id`            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `customer_id`   BIGINT UNSIGNED NOT NULL, -- FK user.id
+    `category_id`   BIGINT UNSIGNED NOT NULL, -- FK category.id
+    `executor_id`   BIGINT UNSIGNED NULL,     -- FK user.id
 
-    `title`         VARCHAR(255) NOT NULL, -- min length 10
-    `description`   TEXT         NOT NULL, -- min length 30
-    `budget`        INT UNSIGNED NOT NULL, -- int > 0
-    `expire_date`   DATE         NOT NULL, -- ГГГГ-ММ-ДД
+    `title`         VARCHAR(255)    NOT NULL, -- min length 10
+    `description`   TEXT            NOT NULL, -- min length 30
+    `budget`        BIGINT UNSIGNED NOT NULL, -- int > 0
+    `expire_date`   DATE            NOT NULL, -- ГГГГ-ММ-ДД
 
-    `status`        ENUM('new', 'canceled', 'assigned', 'completed', 'failed') NOT NULL DEFAULT 'new',
+    `status`        VARCHAR(32)     NOT NULL DEFAULT 'new',
 
     -- ТЗ: «Удалённая работа» — добавляет к условию фильтрации показ заданий только без географической привязки
-    `is_remote`     TINYINT UNSIGNED NOT NULL DEFAULT 0, -- extra field ? to index for filter/search
     -- ТЗ: При выборе локации пользователь вводит город/район/улицу, а геокодер на стороне клиента подставляет значения (широта, долгота, название города) в скрытые поля формы.
     -- ТЗ: Если поле «Локация» не было заполнено, то задание сохраняется без географической привязки. В этом случае id города и координаты в задании отсутствуют.
-    `location`      VARCHAR(255) NULL, -- location address typed by user
-    `city_id`       INT UNSIGNED NULL, -- FK city.id
-    `lat`           DECIMAL(10,7) NULL,
-    `lng`           DECIMAL(10,7) NULL,
+    `location`      VARCHAR(255)    NULL, -- location address typed by user
+    `city_id`       BIGINT UNSIGNED NULL, -- FK city.id
+    `lat`           DECIMAL(10,7)   NULL,
+    `lng`           DECIMAL(10,7)   NULL,
 
-    `created_at`    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`    TIMESTAMP    NULL, -- managed by application model
+    `created_at`    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`    TIMESTAMP       NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
 
-    -- Indexes for filtering tasks
-    KEY `idx_task_customer_id` (`customer_id`),
-    KEY `idx_task_category_id` (`category_id`),
-    KEY `idx_task_status` (`status`),
-    KEY `idx_task_city_id` (`city_id`),
-    KEY `idx_task_executor_id` (`executor_id`),
-    KEY `idx_task_expire_date` (`expire_date`),
-    KEY `idx_task_created_at`  (`created_at`)
+    CONSTRAINT `chk_task_budget_positive`
+        CHECK (`budget` > 0),
 
-    -- Full-text index for searching task by title and description ТЗ: Поиск заданий по категориям и названию
-    -- FULLTEXT KEY `ft_task_title_description` (`title`, `description`)
+    CONSTRAINT `chk_task_status`
+        CHECK (`status` IN ('new', 'canceled', 'in_progress', 'completed', 'failed')),
+
+    INDEX `idx_task_expire_date` (`expire_date`),
+    INDEX `idx_task_created_at`  (`created_at`),
+
+    CONSTRAINT `fk_task_customer`
+        FOREIGN KEY (`customer_id`)
+        REFERENCES `user` (`id`),
+
+    CONSTRAINT `fk_task_category`
+        FOREIGN KEY (`category_id`)
+        REFERENCES `category` (`id`),
+
+    CONSTRAINT `fk_task_executor`
+        FOREIGN KEY (`executor_id`)
+        REFERENCES `user` (`id`),
+
+    CONSTRAINT `fk_task_city`
+        FOREIGN KEY (`city_id`)
+        REFERENCES `city` (`id`)
 
 ) ENGINE=InnoDB;
 
 -- Task attachment
 -- ТЗ: Файлы. Задание не обязано содержать прикреплённые файлы. Загруженные файлы могут быть любого формата.
-CREATE TABLE IF NOT EXISTS `task_attachment` (
-    `id`        INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    -- `customer_id` INT UNSIGNED NOT NULL, -- FK user.id extra field
-    `task_id`   INT UNSIGNED NOT NULL, -- FK user.id
+CREATE TABLE IF NOT EXISTS `attachment` (
+    `id`            BIGINT UNSIGNED     NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    -- `customer_id`   BIGINT UNSIGNED     NOT NULL, -- FK user.id extra field?
+    `task_id`       BIGINT UNSIGNED     NOT NULL, -- FK task.id
 
-    `file_path` VARCHAR(255) NULL, -- file path without name (uploads/task/task_id/)
-    `file_name` VARCHAR(255) NULL, -- file name (hashed_file_name.ext) to get the file
-    `file_original_name` VARCHAR(255) NULL, -- user file original name (hashed_file_name.ext) to show in task
+    `file_path`     VARCHAR(255)        NOT NULL, -- file path with hashed name (uploads/task/task_id/hashed_file_name.ext)
+    `original_name` VARCHAR(255)        NOT NULL, -- user file original name to show in task and download
 
-    `created_at`    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `created_at`    TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    -- Indexes
-    KEY `idx_task_id` (`task_id`)
+    CONSTRAINT `fk_attachment_task`
+        FOREIGN KEY (`task_id`)
+        REFERENCES `task` (`id`)
 
 ) ENGINE=InnoDB;
 
 -- Bid
 CREATE TABLE IF NOT EXISTS `bid` (
-    `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `user_id`    INT UNSIGNED NOT NULL, -- FK user.id
-    `task_id`    INT UNSIGNED NOT NULL, -- FK task.id
+    `id`        BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `user_id`   BIGINT UNSIGNED NOT NULL, -- FK user.id
+    `task_id`   BIGINT UNSIGNED NOT NULL, -- FK task.id
 
-    `price`      INT UNSIGNED NOT NULL, -- int > 0
+    `price`     BIGINT UNSIGNED NOT NULL, -- int > 0
 
-    `status`     ENUM('new', 'accepted', 'rejected') NOT NULL DEFAULT 'new',
+    `status`    VARCHAR(16) NOT NULL DEFAULT 'new',
 
     `created_at` TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TIMESTAMP    NULL, -- managed by application model
+    `updated_at` TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
 
-    UNIQUE KEY `uq_bid_user_task` (`user_id`, `task_id`),
-    KEY `idx_bid_user_created_at` (`user_id`, `created_at`),
-    KEY `idx_bid_task_created_at` (`task_id`, `created_at`)
+    CONSTRAINT `uq_bid_user_task`
+        UNIQUE (`user_id`, `task_id`),
+
+    CONSTRAINT `chk_bid_price_positive`
+        CHECK (`price` > 0),
+
+    CONSTRAINT `chk_bid_status`
+        CHECK (`status` IN ('new', 'accepted', 'rejected')),
+
+    CONSTRAINT `fk_bid_user`
+        FOREIGN KEY (`user_id`)
+        REFERENCES `user` (`id`),
+
+    CONSTRAINT `fk_bid_task`
+        FOREIGN KEY (`task_id`)
+        REFERENCES `task` (`id`)
 
 ) ENGINE=InnoDB;
 
 -- Review (customer`s review)
 CREATE TABLE IF NOT EXISTS `review` (
-    `id`          INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `customer_id` INT UNSIGNED NOT NULL, -- FK user.id
-    `task_id`     INT UNSIGNED NOT NULL, -- FK task.id
-    `executor_id` INT UNSIGNED NOT NULL, -- FK user.id to show reviews on executor page without extra join task table
+    `id`          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `customer_id` BIGINT UNSIGNED NOT NULL, -- FK user.id
+    `task_id`     BIGINT UNSIGNED NOT NULL, -- FK task.id
+    `executor_id` BIGINT UNSIGNED NOT NULL, -- FK user.id to show reviews on executor page without extra join task table
 
     `score`       TINYINT UNSIGNED NOT NULL, -- score: 1..5
     `comment`     TEXT NULL, -- customer's review
 
     `created_at`  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    UNIQUE KEY `uq_review_task` (`task_id`),
-    KEY `idx_review_customer_created_at` (`customer_id`, `created_at`),
-    KEY `idx_review_executor_created_at` (`customer_id`, `created_at`),
-    KEY `idx_review_task_created_at` (`task_id`, `created_at`)
+    CONSTRAINT `chk_review_score`
+        CHECK (`score` BETWEEN 1 AND 5),
+
+    UNIQUE INDEX `uq_review_task` (`task_id`),
+    -- CONSTRAINT `uq_review_task`
+    --    UNIQUE (`task_id`),
+
+    INDEX `idx_review_customer_created_at` (`customer_id`, `created_at`),
+    INDEX `idx_review_executor_created_at` (`executor_id`, `created_at`),
+
+    CONSTRAINT `fk_review_customer`
+        FOREIGN KEY (`customer_id`)
+        REFERENCES `user` (`id`),
+
+    CONSTRAINT `fk_review_task`
+        FOREIGN KEY (`task_id`)
+        REFERENCES `task` (`id`),
+
+    CONSTRAINT `fk_review_executor`
+        FOREIGN KEY (`executor_id`)
+        REFERENCES `user` (`id`)
 
 ) ENGINE=InnoDB;
 
--- Executor statistics (updates on adding a new review)
-CREATE TABLE IF NOT EXISTS `executor_stats` (
-    `id`                INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `executor_id`       INT UNSIGNED NOT NULL, -- FK user.id
-
-    `completed_tasks`   INT UNSIGNED NOT NULL DEFAULT 0, -- completed task counter
-    `failed_tasks`      INT UNSIGNED NOT NULL DEFAULT 0, -- failed task counter
-    `avg_score`         DECIMAL(3,2) NULL, -- based on reviews = сумма всех оценок из отзывов / (кол-во отзывов + счетчик проваленных заданий).
-    `rating_position`   INT UNSIGNED NULL, -- based on avg_score
-
-    `status`            ENUM('open', 'busy') NOT NULL DEFAULT 'open',
-
-    `updated_at`        TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP, -- updates on change
-
-    UNIQUE KEY `uq_executor_stats_executor_id` (`executor_id`)
-
-) ENGINE=InnoDB;
-
--- City dictionary
-CREATE TABLE IF NOT EXISTS `city` (
-    `id`    INT UNSIGNED  NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `name`  VARCHAR(255)  NOT NULL,
-    `lat`   DECIMAL(10,7) NOT NULL,
-    `lng`   DECIMAL(10,7) NOT NULL,
-
-    UNIQUE KEY `uq_city_name` (`name`)
-
-) ENGINE=InnoDB;
+-- Executor statistics (view)
+CREATE OR REPLACE VIEW `executor_stats_view` AS
+SELECT
+    u.id AS executor_id,
+    u.name,
+    COUNT(DISTINCT CASE WHEN t.status = 'completed' THEN t.id END) AS completed_tasks,
+    COUNT(DISTINCT CASE WHEN t.status = 'failed' THEN t.id END) AS failed_tasks,
+    ROUND(AVG(r.score), 2) AS avg_score,
+    -- use window function to calculate rating_position
+    ROW_NUMBER() OVER (ORDER BY ROUND(AVG(r.score), 2) DESC) AS rating_position
+FROM `user` u
+LEFT JOIN `task` AS t
+    ON t.executor_id = u.id
+LEFT JOIN `review` AS r
+    ON r.executor_id = u.id
+WHERE u.is_executor = TRUE
+GROUP BY u.id;
