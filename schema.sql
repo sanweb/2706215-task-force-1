@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS `attachment` (
     `file_path`     VARCHAR(255)        NOT NULL, -- relative path to stored file
     `original_name` VARCHAR(255)        NOT NULL, -- original filename
     `mime_type`     VARCHAR(255)        NULL,
-    `size`          INT UNSIGNED        NULL,
+    `size_bytes`    BIGINT UNSIGNED     NULL,
 
     `created_at`    TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
