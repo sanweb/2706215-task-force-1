@@ -17,20 +17,28 @@ final class Task
     private int $customerId;
     private ?int $executorId;
 
-    public function __construct(TaskStatus $status, int $customerId, ?int $executorId = null)
-    {
-        if ($customerId > 0) {
-            $this->status = $status;
-            $this->customerId = $customerId;
-            $this->executorId = $executorId > 0 ? $executorId : null;
-        } else {
+    public function __construct(
+        TaskStatus $status,
+        int $customerId,
+        ?int $executorId = null
+    ) {
+        if ($customerId <= 0) {
             throw new InvalidArgumentException(sprintf(
-                'Invalid task data (status: %s, customerId: %d, executorId: %s)',
-                $status->value,
+                'Customer ID must be positive; %d given',
                 $customerId,
-                $executorId === null ? 'null' : (string) $executorId
             ));
         }
+
+        if ($executorId !== null && $executorId <= 0) {
+            throw new InvalidArgumentException(sprintf(
+                'Executor ID must be positive; %d given',
+                $executorId,
+            ));
+        }
+
+        $this->status = $status;
+        $this->customerId = $customerId;
+        $this->executorId = $executorId;
     }
 
     public function getActionNextStatus(TaskAction $action): TaskStatus
@@ -49,55 +57,53 @@ final class Task
 
     public function getAvailableActions(): array
     {
-        $availableActions = [];
-
-        if ($this->status === TaskStatus::New) {
-            $availableActions = [
+        return match ($this->status) {
+            TaskStatus::New => [
                 TaskAction::Cancel,
                 TaskAction::Bid,
                 TaskAction::Assign,
-            ];
-        } elseif ($this->status === TaskStatus::InProgress) {
-            $availableActions = [
+            ],
+            TaskStatus::InProgress => [
                 TaskAction::Complete,
                 TaskAction::Refuse,
-            ];
-        }
-
-        return $availableActions;
+            ],
+            TaskStatus::Canceled,
+            TaskStatus::Completed,
+            TaskStatus::Failed => [],
+        };
     }
 
     public function getAllowedActions(UserRole $userRole): array
     {
-        $allowedActions = [];
-
-        if ($userRole === UserRole::Customer) {
-            $allowedActions = [
+        return match ($userRole) {
+            UserRole::Customer => [
                 TaskAction::Create,
                 TaskAction::Cancel,
                 TaskAction::Assign,
                 TaskAction::Complete,
-            ];
-        } elseif ($userRole === UserRole::Executor) {
-            $allowedActions = [
+            ],
+            UserRole::Executor => [
                 TaskAction::Bid,
                 TaskAction::Refuse,
-            ];
-        }
-
-        return $allowedActions;
+            ],
+        };
     }
 
     public function act(TaskAction $action, UserRole $userRole): TaskStatus
     {
-        if (
-            !in_array($action, $this->getAvailableActions(), true)
-            || !in_array($action, $this->getAllowedActions($userRole), true)
-        ) {
-            throw new RuntimeException("Cannot perform {$action->value} by {$userRole->value} on status {$this->status->value}");
+        if (!in_array($action, $this->getAllowedActions($userRole), true)) {
+            throw new RuntimeException(
+                "User with role {$userRole->value} cannot perform action {$action->value}"
+            );
         }
 
-        $this->status = self::getActionNextStatus($action) ?: $this->status;
+        if (!in_array($action, $this->getAvailableActions(), true)) {
+            throw new RuntimeException(
+                "Action {$action->value} is unavailable for status {$this->status->value}."
+            );
+        }
+
+        $this->status = $this->getActionNextStatus($action);
 
         return $this->status;
     }
