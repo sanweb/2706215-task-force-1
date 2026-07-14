@@ -6,17 +6,18 @@ use Sanweb\Taskforce\models\Task;
 use Sanweb\Taskforce\enum\TaskStatus;
 use Sanweb\Taskforce\enum\TaskAction;
 use Sanweb\Taskforce\enum\UserRole;
+use Sanweb\Taskforce\exception\TaskActionException;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-// helper for negative scenarios that throws RuntimeException
-function assertRuntimeException(callable $callback, string $message): void
+// helper for negative scenarios that throws TaskActionException
+function assertTaskActionException(callable $callback, string $message): void
 {
     $exceptionThrown = false;
 
     try {
         $callback();
-    } catch (RuntimeException $exception) {
+    } catch (TaskActionException $exception) {
         $exceptionThrown = true;
     }
 
@@ -85,24 +86,24 @@ assert(
 );
 
 // Test $task->act() on negative scenarios
-assertRuntimeException(
+assertTaskActionException(
     fn() => $task->act(TaskAction::Refuse, UserRole::Executor),
     'Try to refuse already refused task by executor'
 );
 
-assertRuntimeException(
+assertTaskActionException(
     fn() => $task->act(TaskAction::Cancel, UserRole::Customer),
     'Try to cancel already refused task by customer'
 );
 
 $task = new Task(TaskStatus::New, 1);
 
-assertRuntimeException(
+assertTaskActionException(
     fn() => $task->act(TaskAction::Complete, UserRole::Customer),
     'Try to complete task with status new by customer'
 );
 
-assertRuntimeException(
+assertTaskActionException(
     fn() => $task->act(TaskAction::Cancel, UserRole::Executor),
     'Try to cancel task with status new by executor'
 );

@@ -8,8 +8,8 @@ use Sanweb\Taskforce\enum\TaskStatus;
 use Sanweb\Taskforce\enum\TaskAction;
 use Sanweb\Taskforce\enum\UserRole;
 
-use RuntimeException;
 use InvalidArgumentException;
+use Sanweb\Taskforce\exception\TaskActionException;
 
 final class Task
 {
@@ -52,6 +52,13 @@ final class Task
 
             // Actions that do not change the status
             TaskAction::Bid => $this->status,
+
+            // Actions that cannot be applied to the task
+            /*
+            TaskAction::Create => throw new TaskActionException(
+                'The create action cannot be applied to an existing task.'
+            ),
+            */
         };
     }
 
@@ -92,13 +99,13 @@ final class Task
     public function act(TaskAction $action, UserRole $userRole): TaskStatus
     {
         if (!in_array($action, $this->getAllowedActions($userRole), true)) {
-            throw new RuntimeException(
+            throw new TaskActionException(
                 "User with role {$userRole->value} cannot perform action {$action->value}"
             );
         }
 
         if (!in_array($action, $this->getAvailableActions(), true)) {
-            throw new RuntimeException(
+            throw new TaskActionException(
                 "Action {$action->value} is unavailable for status {$this->status->value}."
             );
         }
