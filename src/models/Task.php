@@ -4,154 +4,97 @@ declare(strict_types=1);
 
 namespace Sanweb\Taskforce\models;
 
+use Sanweb\Taskforce\enum\TaskStatus;
+use Sanweb\Taskforce\enum\TaskAction;
+use Sanweb\Taskforce\enum\UserRole;
+
 use RuntimeException;
 use InvalidArgumentException;
 
 final class Task
 {
-    public const STATUS_NEW = 'new';
-    public const STATUS_CANCELED = 'canceled';
-    public const STATUS_IN_PROGRESS = 'in_progress';
-    public const STATUS_COMPLETED = 'completed';
-    public const STATUS_FAILED = 'failed';
-
-    public const ACTION_CREATE = 'create'; // ?
-    public const ACTION_CANCEL = 'cancel';
-    public const ACTION_BID = 'bid'; // ?
-    public const ACTION_ASSIGN = 'assign';
-    public const ACTION_COMPLETE = 'complete';
-    public const ACTION_REFUSE = 'refuse';
-
-    public const USER_ROLE_CUSTOMER = 'customer';
-    public const USER_ROLE_EXECUTOR = 'executor';
-
-    private static array $statusMap = [
-        self::STATUS_NEW => 'Новое',
-        self::STATUS_CANCELED => 'Отменено',
-        self::STATUS_IN_PROGRESS => 'В работе',
-        self::STATUS_COMPLETED => 'Выполнено',
-        self::STATUS_FAILED => 'Провалено',
-    ];
-
-    private static array $actionMap = [
-        self::ACTION_CREATE => 'Создать',
-        self::ACTION_CANCEL => 'Отменить',
-        self::ACTION_BID => 'Откликнуться',
-        self::ACTION_ASSIGN => 'Назначить',
-        self::ACTION_COMPLETE => 'Завершить',
-        self::ACTION_REFUSE => 'Отказаться',
-    ];
-
-    private static array $actionNextStatusMap = [
-        self::ACTION_CREATE => self::STATUS_NEW,
-        self::ACTION_CANCEL => self::STATUS_CANCELED,
-        //self::ACTION_BID => self::STATUS_NEW,
-        self::ACTION_ASSIGN => self::STATUS_IN_PROGRESS,
-        self::ACTION_COMPLETE => self::STATUS_COMPLETED,
-        self::ACTION_REFUSE => self::STATUS_FAILED,
-    ];
-
-    /**
-     * @todo Move to appropriate place
-     */
-    private static array $userRoleMap = [
-        self::USER_ROLE_CUSTOMER => 'Заказчик',
-        self::USER_ROLE_EXECUTOR => 'Исполнитель',
-    ];
-
-    private string $status;
+    private TaskStatus $status;
     private int $customerId;
     private ?int $executorId;
 
-    public static function getStatuses(): array
+    public function __construct(TaskStatus $status, int $customerId, ?int $executorId = null)
     {
-        return self::$statusMap;
-    }
-
-    public static function getStatusLabel(string $status): ?string
-    {
-        return self::$statusMap[$status] ?? null;
-    }
-
-    public static function getActions(): array
-    {
-        return self::$actionMap;
-    }
-
-    public static function getActionNextStatus(string $action): ?string
-    {
-        return self::$actionNextStatusMap[$action] ?? null;
-    }
-
-    public function __construct(string $status, int $customerId, ?int $executorId = null)
-    {
-        if (isset(self::$statusMap[$status]) && $customerId > 0) {
+        if ($customerId > 0) {
             $this->status = $status;
             $this->customerId = $customerId;
             $this->executorId = $executorId > 0 ? $executorId : null;
         } else {
             throw new InvalidArgumentException(sprintf(
                 'Invalid task data (status: %s, customerId: %d, executorId: %s)',
-                $status,
+                $status->value,
                 $customerId,
                 $executorId === null ? 'null' : (string) $executorId
             ));
         }
     }
 
-    public function getStatus(): string
+    public function getActionNextStatus(TaskAction $action): TaskStatus
     {
-        return $this->status;
+        return match ($action) {
+            TaskAction::Create => TaskStatus::New,
+            TaskAction::Cancel => TaskStatus::Canceled,
+            TaskAction::Assign => TaskStatus::InProgress,
+            TaskAction::Complete => TaskStatus::Completed,
+            TaskAction::Refuse => TaskStatus::Failed,
+
+            // Actions that do not change the status
+            TaskAction::Bid => $this->status,
+        };
     }
 
     public function getAvailableActions(): array
     {
         $availableActions = [];
 
-        if ($this->status === self::STATUS_NEW) {
+        if ($this->status === TaskStatus::New) {
             $availableActions = [
-                self::ACTION_CANCEL,
-                self::ACTION_BID,
-                self::ACTION_ASSIGN,
+                TaskAction::Cancel,
+                TaskAction::Bid,
+                TaskAction::Assign,
             ];
-        } elseif ($this->status === self::STATUS_IN_PROGRESS) {
+        } elseif ($this->status === TaskStatus::InProgress) {
             $availableActions = [
-                self::ACTION_COMPLETE,
-                self::ACTION_REFUSE,
+                TaskAction::Complete,
+                TaskAction::Refuse,
             ];
         }
 
         return $availableActions;
     }
 
-    public function getAllowedActions(string $userRole): array
+    public function getAllowedActions(UserRole $userRole): array
     {
         $allowedActions = [];
 
-        if ($userRole === self::USER_ROLE_CUSTOMER) {
+        if ($userRole === UserRole::Customer) {
             $allowedActions = [
-                self::ACTION_CREATE,
-                self::ACTION_CANCEL,
-                self::ACTION_ASSIGN,
-                self::ACTION_COMPLETE,
+                TaskAction::Create,
+                TaskAction::Cancel,
+                TaskAction::Assign,
+                TaskAction::Complete,
             ];
-        } elseif ($userRole === self::USER_ROLE_EXECUTOR) {
+        } elseif ($userRole === UserRole::Executor) {
             $allowedActions = [
-                self::ACTION_BID,
-                self::ACTION_REFUSE,
+                TaskAction::Bid,
+                TaskAction::Refuse,
             ];
         }
 
         return $allowedActions;
     }
 
-    public function act(string $action, string $userRole): string
+    public function act(TaskAction $action, UserRole $userRole): TaskStatus
     {
         if (
             !in_array($action, $this->getAvailableActions(), true)
             || !in_array($action, $this->getAllowedActions($userRole), true)
         ) {
-            throw new RuntimeException("Cannot perform $action by $userRole on status {$this->status}");
+            throw new RuntimeException("Cannot perform {$action->value} by {$userRole->value} on status {$this->status->value}");
         }
 
         $this->status = self::getActionNextStatus($action) ?: $this->status;
