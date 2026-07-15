@@ -14,14 +14,13 @@ use Sanweb\Taskforce\exception\TaskActionException;
 final class Task
 {
     private TaskStatus $status;
-    private int $customerId;
-    private ?int $executorId;
 
     public function __construct(
         TaskStatus $status,
-        int $customerId,
-        ?int $executorId = null
+        private int $customerId,
+        private ?int $executorId = null
     ) {
+        // Validate $customerId and $executorId
         if ($customerId <= 0) {
             throw new InvalidArgumentException(sprintf(
                 'Customer ID must be positive; %d given',
@@ -36,9 +35,8 @@ final class Task
             ));
         }
 
-        $this->status = $status;
-        $this->customerId = $customerId;
-        $this->executorId = $executorId;
+        // Set state
+        $this->setStatus($status);
     }
 
     public function getActionNextStatus(TaskAction $action): TaskStatus
@@ -50,9 +48,11 @@ final class Task
             TaskAction::Complete => TaskStatus::Completed,
             TaskAction::Refuse => TaskStatus::Failed,
 
+            // ?
             // Actions that do not change the status
             TaskAction::Bid => $this->status,
 
+            // ?
             // Actions that cannot be applied to the task
             /*
             TaskAction::Create => throw new TaskActionException(
@@ -84,7 +84,7 @@ final class Task
     {
         return match ($userRole) {
             UserRole::Customer => [
-                TaskAction::Create,
+                TaskAction::Create, // ?
                 TaskAction::Cancel,
                 TaskAction::Assign,
                 TaskAction::Complete,
@@ -110,8 +110,33 @@ final class Task
             );
         }
 
-        $this->status = $this->getActionNextStatus($action);
+        $this->setStatus($this->getActionNextStatus($action));
 
         return $this->status;
+    }
+
+    public function setStatus(TaskStatus $status): void
+    {
+        $this->status = $status;
+    }
+
+    public function getStatus(): TaskStatus
+    {
+        return $this->status;
+    }
+
+    public function getStatusName(): string
+    {
+        return $this->status->name;
+    }
+
+    public function getStatusValue(): string
+    {
+        return $this->status->value;
+    }
+
+    public function getStatusLabel(): string
+    {
+        return $this->status->label();
     }
 }
