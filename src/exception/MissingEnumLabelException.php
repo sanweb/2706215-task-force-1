@@ -7,6 +7,6 @@ namespace Sanweb\Taskforce\exception;
 /**
  * Thrown when an existing enum case has no label.
  */
-final class MissingEnumLabelException extends \LogicException
+final class MissingEnumLabelException extends AppException
 {
 }

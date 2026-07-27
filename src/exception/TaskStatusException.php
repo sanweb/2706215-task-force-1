@@ -7,6 +7,6 @@ namespace Sanweb\Taskforce\exception;
 /**
  * Thrown when task status is not acceptable.
  */
-class TaskStatusException extends \Exception
+class TaskStatusException extends AppException
 {
 }
