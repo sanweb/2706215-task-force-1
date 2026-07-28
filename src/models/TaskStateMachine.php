@@ -9,12 +9,14 @@ use Sanweb\Taskforce\enum\TaskAction;
 use Sanweb\Taskforce\enum\UserRole;
 
 use InvalidArgumentException;
-use Sanweb\Taskforce\components\TaskAction\TaskActionFactory;
+use Sanweb\Taskforce\components\TaskStatus\TaskStatusFactory;
 use Sanweb\Taskforce\exception\TaskActionException;
+use Sanweb\Taskforce\interface\TaskStatusInterface;
 
 final class Task
 {
     private TaskStatus $status;
+    private TaskStatusInterface $state;
 
     public function __construct(
         TaskStatus $status,
@@ -38,15 +40,15 @@ final class Task
         $this->setStatus($status);
     }
 
-    public function getNextStatusByAction(TaskAction $action): TaskStatus
+    private function getNextStatusByAction(TaskAction $action): TaskStatus
     {
         return match ($action) {
-            TaskAction::Cancel => TaskStatus::Canceled,
-            TaskAction::Assign => TaskStatus::InProgress,
-            TaskAction::Complete => TaskStatus::Completed,
-            TaskAction::Refuse => TaskStatus::Failed,
+            TaskAction::Cancel => $this->state->cancel(),
+            TaskAction::Assign => $this->state->assign(),
+            TaskAction::Complete => $this->state->complete(),
+            TaskAction::Refuse => $this->state->refuse(),
 
-            TaskAction::Bid => $this->status,
+            TaskAction::Bid => $this->state->bid(),
 
             TaskAction::Create => throw new TaskActionException(
                 'The create action cannot be applied to an existing task.'
@@ -54,32 +56,9 @@ final class Task
         };
     }
 
-    public function getAvailableActions(int $userId): array
+    public function getAvailableActions(): array
     {
-        $availableActionsForStatus = match ($this->status) {
-            TaskStatus::New => [
-                TaskAction::Cancel,
-                TaskAction::Bid,
-                TaskAction::Assign,
-            ],
-            TaskStatus::InProgress => [
-                TaskAction::Complete,
-                TaskAction::Refuse,
-            ],
-            TaskStatus::Canceled,
-            TaskStatus::Completed,
-            TaskStatus::Failed => [],
-        };
-
-        $allowedActionsForUser = [];
-        foreach ($availableActionsForStatus as $action) {
-            $actionObj = TaskActionFactory::create($action);
-            if ($actionObj->isAllowed($this->customerId, $this->executorId, $userId)) {
-                $allowedActionsForUser[$action->value] = $actionObj;
-            }
-        }
-
-        return $allowedActionsForUser;
+        return $this->state->getAvailableActions();
     }
 
     public function getAllowedActions(UserRole $userRole): array
@@ -97,7 +76,7 @@ final class Task
         };
     }
 
-    public function act(TaskAction $action, UserRole $userRole, int $userId): TaskStatus
+    public function act(TaskAction $action, UserRole $userRole): TaskStatus
     {
         if (!in_array($action, $this->getAllowedActions($userRole), true)) {
             throw new TaskActionException(
@@ -105,12 +84,9 @@ final class Task
             );
         }
 
-        $availableActions = $this->getAvailableActions($userId);
-        if (!array_key_exists($action->value, $availableActions)) {
+        if (!in_array($action, $this->getAvailableActions(), true)) {
             throw new TaskActionException(
-                "Action {$action->value} is unavailable for status {$this->status->value} and user: {$userId} "
-                . "on task with customer: {$this->customerId} "
-                . "and executor: " . ($this->executorId ? "#{$this->executorId}" : "null")
+                "Action {$action->value} is unavailable for status {$this->status->value}."
             );
         }
 
@@ -126,6 +102,7 @@ final class Task
     public function setStatus(TaskStatus $status): void
     {
         $this->status = $status;
+        $this->state = TaskStatusFactory::create($status, $this);
     }
 
     public function getStatus(): TaskStatus
