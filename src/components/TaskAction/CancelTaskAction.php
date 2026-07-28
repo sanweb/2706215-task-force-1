@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sanweb\Taskforce\components\TaskAction;
 
+use Override;
 use Sanweb\Taskforce\enum\TaskAction;
 
 /**
@@ -11,19 +12,19 @@ use Sanweb\Taskforce\enum\TaskAction;
  */
 final class CancelTaskAction extends BaseTaskAction
 {
-    #[\Override]
+    #[Override]
     public function getName(): string
     {
         return TaskAction::Cancel->value;
     }
 
-    #[\Override]
+    #[Override]
     public function getLabel(): string
     {
         return TaskAction::Cancel->label();
     }
 
-    #[\Override]
+    #[Override]
     public function isAllowed(int $customerId, ?int $executorId, int $userId): bool
     {
         return $customerId === $userId && $executorId === null;

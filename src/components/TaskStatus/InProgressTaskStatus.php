@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace Sanweb\Taskforce\components\TaskStatus;
 
+use Override;
 use Sanweb\Taskforce\enum\TaskAction;
 use Sanweb\Taskforce\enum\TaskStatus;
 
 class InProgressTaskStatus extends BaseTaskStatus
 {
 
-    #[\Override]
+    #[Override]
     public function getStatus(): TaskStatus
     {
         return TaskStatus::InProgress;
     }
 
-    #[\Override]
+    #[Override]
     public function getAvailableActions(): array
     {
         return [
@@ -25,19 +26,15 @@ class InProgressTaskStatus extends BaseTaskStatus
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function complete(): TaskStatus
     {
-        //$this->task->setStatus(new CompletedTaskStatus($this->task));
-        //return $this->task->getStatus();
         return TaskStatus::Completed;
     }
 
-    #[\Override]
+    #[Override]
     public function refuse(): TaskStatus
     {
-        //$this->task->setStatus(new FailedTaskStatus($this->task));
-        //return $this->task->getStatus();
         return TaskStatus::Failed;
     }
 

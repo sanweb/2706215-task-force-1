@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sanweb\Taskforce\components\TaskAction;
 
+use Override;
 use Sanweb\Taskforce\enum\TaskAction;
 
 /**
@@ -11,19 +12,19 @@ use Sanweb\Taskforce\enum\TaskAction;
  */
 final class BidTaskAction extends BaseTaskAction
 {
-    #[\Override]
+    #[Override]
     public function getName(): string
     {
         return TaskAction::Bid->value;
     }
 
-    #[\Override]
+    #[Override]
     public function getLabel(): string
     {
         return TaskAction::Bid->label();
     }
 
-    #[\Override]
+    #[Override]
     public function isAllowed(int $customerId, ?int $executorId, int $userId): bool
     {
         // Does not check the executor role or an existing bid.
