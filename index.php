@@ -24,12 +24,15 @@ function assertTaskActionException(callable $callback, string $message): void
     assert($exceptionThrown === true, $message);
 }
 
-$task = new Task(TaskStatus::New, 1);
+$userId = 1;
+$customerId = 1;
+$executorId = 2;
+$task = new Task(TaskStatus::New, $customerId, null);
 
 // Test $task->getNextStatusByAction()
 
 assertTaskActionException(
-    fn() => $task->act(TaskAction::Create, UserRole::Customer),
+    fn() => $task->act(TaskAction::Create, UserRole::Customer, $userId),
     'Try to call create task action'
 );
 assert(
@@ -50,62 +53,65 @@ assert(
 );
 
 // Test $task->act() on positive scenarios
-$task = new Task(TaskStatus::New, 1);
+$task = new Task(TaskStatus::New, $customerId, null);
 
 assert(
-    $task->act(TaskAction::Cancel, UserRole::Customer) === TaskStatus::Canceled,
+    $task->act(TaskAction::Cancel, UserRole::Customer, $userId) === TaskStatus::Canceled,
     'Cancel task with status new by customer'
 );
 
-$task = new Task(TaskStatus::New, 1);
+$task = new Task(TaskStatus::New, $customerId, null);
 
 assert(
-    $task->act(TaskAction::Bid, UserRole::Executor) === TaskStatus::New,
+    $task->act(TaskAction::Bid, UserRole::Executor, $executorId) === TaskStatus::New,
     'Bid to task with status new by executor'
 );
 
 assert(
-    $task->act(TaskAction::Assign, UserRole::Customer) === TaskStatus::InProgress,
+    $task->act(TaskAction::Assign, UserRole::Customer, $userId) === TaskStatus::InProgress,
     'Assign executor and start task by customer'
 );
 
+$task = new Task(TaskStatus::InProgress, $customerId, $executorId);
 assert(
-    $task->act(TaskAction::Complete, UserRole::Customer) === TaskStatus::Completed,
+    $task->act(TaskAction::Complete, UserRole::Customer, $userId) === TaskStatus::Completed,
     'Complete task with status in_progress by customer'
 );
 
-$task = new Task(TaskStatus::New, 1);
+$task = new Task(TaskStatus::New, $customerId, null);
 
 assert(
-    $task->act(TaskAction::Assign, UserRole::Customer) === TaskStatus::InProgress,
+    $task->act(TaskAction::Assign, UserRole::Customer, $userId) === TaskStatus::InProgress,
     'Assign executor and start task by customer'
 );
 
+$task = new Task(TaskStatus::InProgress, $customerId, $executorId);
 assert(
-    $task->act(TaskAction::Refuse, UserRole::Executor) === TaskStatus::Failed,
+    $task->act(TaskAction::Refuse, UserRole::Executor, $executorId) === TaskStatus::Failed,
     'Refuse assigned task by executor'
 );
 
+$task = new Task(TaskStatus::Failed, $customerId, $executorId);
 // Test $task->act() on negative scenarios
 assertTaskActionException(
-    fn() => $task->act(TaskAction::Refuse, UserRole::Executor),
+    fn() => $task->act(TaskAction::Refuse, UserRole::Executor, $executorId),
     'Try to refuse already refused task by executor'
 );
 
 assertTaskActionException(
-    fn() => $task->act(TaskAction::Cancel, UserRole::Customer),
+    fn() => $task->act(TaskAction::Cancel, UserRole::Customer, $userId),
     'Try to cancel already refused task by customer'
 );
 
-$task = new Task(TaskStatus::New, 1);
+$task = new Task(TaskStatus::New, $customerId, null);
 
 assertTaskActionException(
-    fn() => $task->act(TaskAction::Complete, UserRole::Customer),
+    fn() => $task->act(TaskAction::Complete, UserRole::Customer, $userId),
     'Try to complete task with status new by customer'
 );
 
 assertTaskActionException(
-    fn() => $task->act(TaskAction::Cancel, UserRole::Executor),
+    fn() => $task->act(TaskAction::Cancel, UserRole::Executor, $executorId),
     'Try to cancel task with status new by executor'
 );
 

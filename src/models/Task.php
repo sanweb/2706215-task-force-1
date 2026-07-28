@@ -9,6 +9,7 @@ use Sanweb\Taskforce\enum\TaskAction;
 use Sanweb\Taskforce\enum\UserRole;
 
 use InvalidArgumentException;
+use Sanweb\Taskforce\components\TaskAction\TaskActionFactory;
 use Sanweb\Taskforce\exception\TaskActionException;
 
 final class Task
@@ -55,9 +56,9 @@ final class Task
         };
     }
 
-    public function getAvailableActions(): array
+    public function getAvailableActions(int $userId): array
     {
-        return match ($this->status) {
+        $availableActionsForStatus = match ($this->status) {
             TaskStatus::New => [
                 TaskAction::Cancel,
                 TaskAction::Bid,
@@ -71,6 +72,16 @@ final class Task
             TaskStatus::Completed,
             TaskStatus::Failed => [],
         };
+
+        $allowedActionsForUser = [];
+        foreach ($availableActionsForStatus as $action) {
+            $actionObj = TaskActionFactory::create($action);
+            if ($actionObj->isAllowed($this->customerId, $this->executorId, $userId)) {
+                $allowedActionsForUser[$action->value] = $actionObj;
+            }
+        }
+
+        return $allowedActionsForUser;
     }
 
     public function getAllowedActions(UserRole $userRole): array
@@ -89,7 +100,7 @@ final class Task
         };
     }
 
-    public function act(TaskAction $action, UserRole $userRole): TaskStatus
+    public function act(TaskAction $action, UserRole $userRole, int $userId): TaskStatus
     {
         if (!in_array($action, $this->getAllowedActions($userRole), true)) {
             throw new TaskActionException(
@@ -97,9 +108,12 @@ final class Task
             );
         }
 
-        if (!in_array($action, $this->getAvailableActions(), true)) {
+        $availableActions = $this->getAvailableActions($userId);
+        if (!array_key_exists($action->value, $availableActions)) {
             throw new TaskActionException(
-                "Action {$action->value} is unavailable for status {$this->status->value}."
+                "Action {$action->value} is unavailable for status {$this->status->value} and user: {$userId} "
+                . "on task with customer: {$this->customerId} "
+                . "and executor: " . ($this->executorId ? "#{$this->executorId}" : "null")
             );
         }
 
