@@ -26,25 +26,26 @@ function assertTaskActionException(callable $callback, string $message): void
 
 $task = new Task(TaskStatus::New, 1);
 
-// Test $task->getActionNextStatus()
-assert(
-    $task->getActionNextStatus(TaskAction::Create) === TaskStatus::New,
-    'Create task action next status'
+// Test $task->getNextStatusByAction()
+
+assertTaskActionException(
+    fn() => $task->act(TaskAction::Create, UserRole::Customer),
+    'Try to call create task action'
 );
 assert(
-    $task->getActionNextStatus(TaskAction::Cancel) === TaskStatus::Canceled,
+    $task->getNextStatusByAction(TaskAction::Cancel) === TaskStatus::Canceled,
     'Cancel task action next status'
 );
 assert(
-    $task->getActionNextStatus(TaskAction::Assign) === TaskStatus::InProgress,
+    $task->getNextStatusByAction(TaskAction::Assign) === TaskStatus::InProgress,
     'Assign executor and start task action next status'
 );
 assert(
-    $task->getActionNextStatus(TaskAction::Complete) === TaskStatus::Completed,
+    $task->getNextStatusByAction(TaskAction::Complete) === TaskStatus::Completed,
     'Complete task action next status'
 );
 assert(
-    $task->getActionNextStatus(TaskAction::Refuse) === TaskStatus::Failed,
+    $task->getNextStatusByAction(TaskAction::Refuse) === TaskStatus::Failed,
     'Refuse task action next status'
 );
 

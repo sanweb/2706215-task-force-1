@@ -20,7 +20,6 @@ final class Task
         private int $customerId,
         private ?int $executorId = null
     ) {
-        // Validate $customerId and $executorId
         if ($customerId <= 0) {
             throw new InvalidArgumentException(sprintf(
                 'Customer ID must be positive; %d given',
@@ -35,30 +34,24 @@ final class Task
             ));
         }
 
-        // Set state
         $this->setStatus($status);
     }
 
-    public function getActionNextStatus(TaskAction $action): TaskStatus
+    public function getNextStatusByAction(TaskAction $action): TaskStatus
     {
         return match ($action) {
-            TaskAction::Create => TaskStatus::New,
             TaskAction::Cancel => TaskStatus::Canceled,
             TaskAction::Assign => TaskStatus::InProgress,
             TaskAction::Complete => TaskStatus::Completed,
             TaskAction::Refuse => TaskStatus::Failed,
 
-            // ?
             // Actions that do not change the status
             TaskAction::Bid => $this->status,
 
-            // ?
             // Actions that cannot be applied to the task
-            /*
             TaskAction::Create => throw new TaskActionException(
                 'The create action cannot be applied to an existing task.'
             ),
-            */
         };
     }
 
@@ -84,7 +77,7 @@ final class Task
     {
         return match ($userRole) {
             UserRole::Customer => [
-                TaskAction::Create, // ?
+                //TaskAction::Create is available only for not existing task
                 TaskAction::Cancel,
                 TaskAction::Assign,
                 TaskAction::Complete,
@@ -110,9 +103,13 @@ final class Task
             );
         }
 
-        $this->setStatus($this->getActionNextStatus($action));
+        $nextStatus = $this->getNextStatusByAction($action);
 
-        return $this->status;
+        if ($nextStatus !== $this->getStatus()) {
+            $this->setStatus($nextStatus);
+        }
+
+        return $this->getStatus();
     }
 
     public function setStatus(TaskStatus $status): void
@@ -123,20 +120,5 @@ final class Task
     public function getStatus(): TaskStatus
     {
         return $this->status;
-    }
-
-    public function getStatusName(): string
-    {
-        return $this->status->name;
-    }
-
-    public function getStatusValue(): string
-    {
-        return $this->status->value;
-    }
-
-    public function getStatusLabel(): string
-    {
-        return $this->status->label();
     }
 }
