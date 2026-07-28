@@ -36,7 +36,6 @@ class NewTaskStatus extends BaseTaskStatus
     #[Override]
     public function bid(): TaskStatus
     {
-        // this method does not change the current status
         return $this->getStatus();
     }
 

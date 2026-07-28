@@ -15,7 +15,6 @@ use Sanweb\Taskforce\interface\TaskStatusInterface;
 
 final class Task
 {
-    // ?
     private TaskStatus $status;
     private TaskStatusInterface $state;
 
@@ -24,7 +23,6 @@ final class Task
         private int $customerId,
         private ?int $executorId = null
     ) {
-        // Validate $customerId and $executorId
         if ($customerId <= 0) {
             throw new InvalidArgumentException(sprintf(
                 'Customer ID must be positive; %d given',
@@ -39,7 +37,6 @@ final class Task
             ));
         }
 
-        // Set state
         $this->setStatus($status);
     }
 
@@ -51,12 +48,8 @@ final class Task
             TaskAction::Complete => $this->state->complete(),
             TaskAction::Refuse => $this->state->refuse(),
 
-            // ?
-            // Actions that do not change the status
             TaskAction::Bid => $this->state->bid(),
 
-            // ?
-            // Actions that cannot be applied to the task
             TaskAction::Create => throw new TaskActionException(
                 'The create action cannot be applied to an existing task.'
             ),
@@ -68,12 +61,10 @@ final class Task
         return $this->state->getAvailableActions();
     }
 
-    // Move to auth service?
     public function getAllowedActions(UserRole $userRole): array
     {
         return match ($userRole) {
             UserRole::Customer => [
-                //TaskAction::Create,
                 TaskAction::Cancel,
                 TaskAction::Assign,
                 TaskAction::Complete,
@@ -93,7 +84,6 @@ final class Task
             );
         }
 
-        // ?
         if (!in_array($action, $this->getAvailableActions(), true)) {
             throw new TaskActionException(
                 "Action {$action->value} is unavailable for status {$this->status->value}."
@@ -109,17 +99,14 @@ final class Task
         return $this->getStatus();
     }
 
-    // transitionTo
     public function setStatus(TaskStatus $status): void
     {
         $this->status = $status;
         $this->state = TaskStatusFactory::create($status, $this);
     }
 
-    // ?
     public function getStatus(): TaskStatus
     {
         return $this->status;
-        //return $this->state->getStatus();
     }
 }

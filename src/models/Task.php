@@ -46,10 +46,8 @@ final class Task
             TaskAction::Complete => TaskStatus::Completed,
             TaskAction::Refuse => TaskStatus::Failed,
 
-            // Actions that do not change the status
             TaskAction::Bid => $this->status,
 
-            // Actions that cannot be applied to the task
             TaskAction::Create => throw new TaskActionException(
                 'The create action cannot be applied to an existing task.'
             ),
@@ -88,7 +86,6 @@ final class Task
     {
         return match ($userRole) {
             UserRole::Customer => [
-                //TaskAction::Create is available only for not existing task
                 TaskAction::Cancel,
                 TaskAction::Assign,
                 TaskAction::Complete,

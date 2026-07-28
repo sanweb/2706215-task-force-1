@@ -109,13 +109,11 @@ abstract class BaseTaskStatus implements TaskStatusInterface
         return $this->getStatus()->name;
     }
 
-    // ?
     public function getStatusValue(): string
     {
         return $this->getStatus()->value;
     }
 
-    // ?
     public function getStatusLabel(): string
     {
         return $this->getStatus()->label();

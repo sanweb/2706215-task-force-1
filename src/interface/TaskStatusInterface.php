@@ -8,7 +8,6 @@ use Sanweb\Taskforce\enum\TaskStatus;
 
 interface TaskStatusInterface
 {
-    //public function create(): TaskStatus;
     public function cancel(): TaskStatus;
     public function bid(): TaskStatus;
     public function assign(): TaskStatus;
