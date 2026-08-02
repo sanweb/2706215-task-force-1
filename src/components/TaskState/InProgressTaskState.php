@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Sanweb\Taskforce\components\TaskStatus;
+namespace Sanweb\Taskforce\components\TaskState;
 
 use Override;
 use Sanweb\Taskforce\enum\TaskAction;
 use Sanweb\Taskforce\enum\TaskStatus;
 
-class InProgressTaskStatus extends BaseTaskStatus
+class InProgressTaskState extends BaseTaskState
 {
 
     #[Override]

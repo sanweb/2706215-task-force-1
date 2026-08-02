@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Sanweb\Taskforce\components\TaskStatus;
+namespace Sanweb\Taskforce\components\TaskState;
 
 use Sanweb\Taskforce\enum\TaskAction;
 use Sanweb\Taskforce\enum\TaskStatus;
 
-abstract class BaseTaskStatus implements TaskStatusInterface
+abstract class BaseTaskState implements TaskStateInterface
 {
     /**
      * Returns the status represented by the current state.
