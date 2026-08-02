@@ -6,6 +6,9 @@ namespace Sanweb\Taskforce\components\TaskAction;
 
 use Override;
 use Sanweb\Taskforce\enum\TaskAction;
+use Sanweb\Taskforce\enum\TaskStatus;
+use Sanweb\Taskforce\models\Task;
+use Sanweb\Taskforce\models\User;
 
 /**
  * Makes a bid on the task.
@@ -13,20 +16,24 @@ use Sanweb\Taskforce\enum\TaskAction;
 final class BidTaskAction extends BaseTaskAction
 {
     #[Override]
-    public function getName(): string
+    public function getAction(): TaskAction
     {
-        return TaskAction::Bid->value;
+        return TaskAction::Bid;
     }
 
     #[Override]
-    public function getLabel(): string
+    public function getNextStatus(): ?TaskStatus
     {
-        return TaskAction::Bid->label();
+        return null;
     }
 
     #[Override]
-    public function isAllowed(int $customerId, ?int $executorId, int $userId): bool
-    {
-        return $customerId !== $userId && $executorId === null;
+    public function isAllowed(
+        Task $task,
+        User $user,
+    ): bool {
+        return $task->getCustomerId() !== $user->getId()
+            && $user->getIsExecutor(); // can bid
+            // && $task->getExecutorId() === null;
     }
 }

@@ -6,6 +6,9 @@ namespace Sanweb\Taskforce\components\TaskAction;
 
 use Override;
 use Sanweb\Taskforce\enum\TaskAction;
+use Sanweb\Taskforce\enum\TaskStatus;
+use Sanweb\Taskforce\models\Task;
+use Sanweb\Taskforce\models\User;
 
 /**
  * Cancels the task.
@@ -13,20 +16,23 @@ use Sanweb\Taskforce\enum\TaskAction;
 final class CancelTaskAction extends BaseTaskAction
 {
     #[Override]
-    public function getName(): string
+    public function getAction(): TaskAction
     {
-        return TaskAction::Cancel->value;
+        return TaskAction::Cancel;
     }
 
     #[Override]
-    public function getLabel(): string
+    public function getNextStatus(): ?TaskStatus
     {
-        return TaskAction::Cancel->label();
+        return TaskStatus::Canceled;
     }
 
     #[Override]
-    public function isAllowed(int $customerId, ?int $executorId, int $userId): bool
-    {
-        return $customerId === $userId && $executorId === null;
+    public function isAllowed(
+        Task $task,
+        User $user,
+    ): bool {
+        return $task->getCustomerId() === $user->getId();
+            // && $task->getExecutorId() === null;
     }
 }

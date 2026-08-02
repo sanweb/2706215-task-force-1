@@ -6,6 +6,9 @@ namespace Sanweb\Taskforce\components\TaskAction;
 
 use Override;
 use Sanweb\Taskforce\enum\TaskAction;
+use Sanweb\Taskforce\enum\TaskStatus;
+use Sanweb\Taskforce\models\Task;
+use Sanweb\Taskforce\models\User;
 
 /**
  * Refuses the task.
@@ -13,20 +16,24 @@ use Sanweb\Taskforce\enum\TaskAction;
 final class RefuseTaskAction extends BaseTaskAction
 {
     #[Override]
-    public function getName(): string
+    public function getAction(): TaskAction
     {
-        return TaskAction::Refuse->value;
+        return TaskAction::Refuse;
     }
 
     #[Override]
-    public function getLabel(): string
+    public function getNextStatus(): ?TaskStatus
     {
-        return TaskAction::Refuse->label();
+        return TaskStatus::Failed;
     }
 
     #[Override]
-    public function isAllowed(int $customerId, ?int $executorId, int $userId): bool
-    {
-        return $executorId !== null && $executorId === $userId;
+    public function isAllowed(
+        Task $task,
+        User $user,
+    ): bool {
+        return $task->getExecutorId() === $user->getId();
+            // $task->getExecutorId() !== null
+            // && $task->getExecutorId() === $user->getId();
     }
 }
