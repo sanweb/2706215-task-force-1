@@ -25,17 +25,4 @@ class InProgressTaskStatus extends BaseTaskStatus
             TaskAction::Refuse,
         ];
     }
-
-    #[Override]
-    public function complete(): TaskStatus
-    {
-        return TaskStatus::Completed;
-    }
-
-    #[Override]
-    public function refuse(): TaskStatus
-    {
-        return TaskStatus::Failed;
-    }
-
 }

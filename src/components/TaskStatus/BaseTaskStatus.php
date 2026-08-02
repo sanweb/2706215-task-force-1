@@ -4,94 +4,20 @@ declare(strict_types=1);
 
 namespace Sanweb\Taskforce\components\TaskStatus;
 
+use Sanweb\Taskforce\enum\TaskAction;
 use Sanweb\Taskforce\enum\TaskStatus;
-use Sanweb\Taskforce\exception\TaskStatusException;
-use Sanweb\Taskforce\models\Task;
 
 abstract class BaseTaskStatus implements TaskStatusInterface
 {
     /**
-     * Reference to the context object (Task)
+     * Returns the status represented by the current state.
      */
-    protected Task $task;
-
-    public function __construct(Task $task)
-    {
-        $this->task = $task;
-    }
+    abstract public function getStatus(): TaskStatus;
 
     /**
-     * Default implementation for cancel action.
+     * Returns the actions available for the current status.
      *
-     * By default, this action is not allowed in most states.
-     * Only states that support this transition will override this method.
-     *
-     * @throws TaskStatusException
-     */
-    public function cancel(): TaskStatus
-    {
-        throw new TaskStatusException('Cannot cancel task in ' . $this->getStatusName() . ' status');
-    }
-
-    /**
-     * Default implementation for bid action.
-     *
-     * By default, this action is not allowed in most states.
-     * Only states that support this transition will override this method.
-     *
-     * @throws TaskStatusException
-     */
-    public function bid(): TaskStatus
-    {
-        throw new TaskStatusException('Cannot submit bid on task in ' . $this->getStatusName() . ' status');
-    }
-
-    /**
-     * Default implementation for assign action.
-     *
-     * By default, this action is not allowed in most states.
-     * Only states that support this transition will override this method.
-     *
-     * @throws TaskStatusException
-     */
-    public function assign(): TaskStatus
-    {
-        throw new TaskStatusException('Cannot assign executor on task in ' . $this->getStatusName() . ' status');
-    }
-
-    /**
-     * Default implementation for complete action.
-     *
-     * By default, this action is not allowed in most states.
-     * Only states that support this transition will override this method.
-     *
-     * @throws TaskStatusException
-     */
-    public function complete(): TaskStatus
-    {
-        throw new TaskStatusException('Cannot complete task in ' . $this->getStatusName() . ' status');
-    }
-
-    /**
-     * Default implementation for refuse action.
-     *
-     * By default, this action is not allowed in most states.
-     * Only states that support this transition will override this method.
-     *
-     * @throws TaskStatusException
-     */
-    public function refuse(): TaskStatus
-    {
-        throw new TaskStatusException('Cannot refuse task in ' . $this->getStatusName() . ' status');
-    }
-
-    /**
-     * Default implementation for getting available actions.
-     *
-     * By default, returns empty array.
-     * Only states that have available actions will override this method.
-     *
-     * @return array
+     * @return list<TaskAction>
      */
     public function getAvailableActions(): array
     {
@@ -99,32 +25,18 @@ abstract class BaseTaskStatus implements TaskStatusInterface
     }
 
     /**
-     * Public method to get the task status name from its status.
-     *
-     * @return string The name of the current task status
+     * Returns the string identifier of the current status.
      */
     public function getStatusName(): string
-    {
-        return $this->getStatus()->name;
-    }
-
-    public function getStatusValue(): string
     {
         return $this->getStatus()->value;
     }
 
+    /**
+     * Returns the human-readable label of the current status.
+     */
     public function getStatusLabel(): string
     {
         return $this->getStatus()->label();
     }
-
-    /**
-     * Abstract method to get the task status.
-     *
-     * Each concrete task status must implement this method to return its status.
-     *
-     * @return TaskStatus The current task status
-     */
-
-    abstract public function getStatus(): TaskStatus;
 }

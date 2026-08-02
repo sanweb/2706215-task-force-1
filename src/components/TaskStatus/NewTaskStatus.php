@@ -26,22 +26,4 @@ class NewTaskStatus extends BaseTaskStatus
             TaskAction::Assign,
         ];
     }
-
-    #[Override]
-    public function cancel(): TaskStatus
-    {
-        return TaskStatus::Canceled;
-    }
-
-    #[Override]
-    public function bid(): TaskStatus
-    {
-        return $this->getStatus();
-    }
-
-    #[Override]
-    public function assign(): TaskStatus
-    {
-        return TaskStatus::InProgress;
-    }
 }

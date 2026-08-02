@@ -5,21 +5,17 @@ declare(strict_types=1);
 namespace Sanweb\Taskforce\components\TaskStatus;
 
 use Sanweb\Taskforce\enum\TaskStatus;
-use Sanweb\Taskforce\models\Task;
 
 final class TaskStatusFactory
 {
-    public static function create(
-        TaskStatus $status,
-        Task $task
-    ): TaskStatusInterface
+    public static function create(TaskStatus $status): TaskStatusInterface
     {
         return match ($status) {
-            TaskStatus::New => new NewTaskStatus($task),
-            TaskStatus::Canceled => new CanceledTaskStatus($task),
-            TaskStatus::InProgress => new InProgressTaskStatus($task),
-            TaskStatus::Completed => new CompletedTaskStatus($task),
-            TaskStatus::Failed => new FailedTaskStatus($task),
+            TaskStatus::New => new NewTaskStatus(),
+            TaskStatus::Canceled => new CanceledTaskStatus(),
+            TaskStatus::InProgress => new InProgressTaskStatus(),
+            TaskStatus::Completed => new CompletedTaskStatus(),
+            TaskStatus::Failed => new FailedTaskStatus(),
         };
     }
 }
