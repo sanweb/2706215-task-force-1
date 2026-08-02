@@ -8,7 +8,7 @@ use Sanweb\Taskforce\enum\TaskStatus;
 
 final class TaskStateFactory
 {
-    public static function create(TaskStatus $status): TaskStateInterface
+    public function create(TaskStatus $status): TaskStateInterface
     {
         return match ($status) {
             TaskStatus::New => new NewTaskState(),
