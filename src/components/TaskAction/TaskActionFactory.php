@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Sanweb\Taskforce\components\TaskAction;
 
 use Sanweb\Taskforce\enum\TaskAction;
-use Sanweb\Taskforce\interface\TaskActionInterface;
 
 final class TaskActionFactory
 {

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Sanweb\Taskforce\components\TaskStatus;
 
 use Sanweb\Taskforce\enum\TaskStatus;
-use Sanweb\Taskforce\interface\TaskStatusInterface;
 use Sanweb\Taskforce\models\Task;
 
 final class TaskStatusFactory

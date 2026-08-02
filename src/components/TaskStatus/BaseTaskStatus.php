@@ -6,7 +6,6 @@ namespace Sanweb\Taskforce\components\TaskStatus;
 
 use Sanweb\Taskforce\enum\TaskStatus;
 use Sanweb\Taskforce\exception\TaskStatusException;
-use Sanweb\Taskforce\interface\TaskStatusInterface;
 use Sanweb\Taskforce\models\Task;
 
 abstract class BaseTaskStatus implements TaskStatusInterface

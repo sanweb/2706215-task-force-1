@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sanweb\Taskforce\interface;
+namespace Sanweb\Taskforce\components\TaskStatus;
 
 use Sanweb\Taskforce\enum\TaskStatus;
 
