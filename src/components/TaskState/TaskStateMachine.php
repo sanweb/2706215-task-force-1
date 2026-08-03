@@ -9,11 +9,9 @@ use Sanweb\Taskforce\models\Task;
 
 final readonly class TaskStateMachine
 {
-    public function __construct(private TaskStateFactory $stateFactory) {}
-
     public function getAvailableActions(Task $task): array
     {
-        $state = $this->stateFactory->create($task->getStatus());
+        $state = TaskStateFactory::create($task->getStatus());
 
         return $state->getAvailableActions();
     }
