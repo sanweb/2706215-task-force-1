@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Sanweb\Taskforce\components\TaskStatus;
+namespace Sanweb\Taskforce\components\TaskState;
 
 use Override;
 use Sanweb\Taskforce\enum\TaskAction;
 use Sanweb\Taskforce\enum\TaskStatus;
 
-class NewTaskStatus extends BaseTaskStatus
+class NewTaskState extends BaseTaskState
 {
 
     #[Override]
@@ -25,23 +25,5 @@ class NewTaskStatus extends BaseTaskStatus
             TaskAction::Bid,
             TaskAction::Assign,
         ];
-    }
-
-    #[Override]
-    public function cancel(): TaskStatus
-    {
-        return TaskStatus::Canceled;
-    }
-
-    #[Override]
-    public function bid(): TaskStatus
-    {
-        return $this->getStatus();
-    }
-
-    #[Override]
-    public function assign(): TaskStatus
-    {
-        return TaskStatus::InProgress;
     }
 }

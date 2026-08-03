@@ -5,19 +5,13 @@ declare(strict_types=1);
 namespace Sanweb\Taskforce\models;
 
 use Sanweb\Taskforce\enum\TaskStatus;
-use Sanweb\Taskforce\enum\TaskAction;
-use Sanweb\Taskforce\enum\UserRole;
 
 use InvalidArgumentException;
-use Sanweb\Taskforce\components\TaskAction\TaskActionFactory;
-use Sanweb\Taskforce\exception\TaskActionException;
 
-final class Task
+final readonly class Task
 {
-    private TaskStatus $status;
-
     public function __construct(
-        TaskStatus $status,
+        private TaskStatus $status,
         private int $customerId,
         private ?int $executorId = null
     ) {
@@ -34,102 +28,38 @@ final class Task
                 $executorId,
             ));
         }
-
-        $this->setStatus($status);
     }
 
-    public function getNextStatusByAction(TaskAction $action): TaskStatus
+    public function withStatus(TaskStatus $status): self
     {
-        return match ($action) {
-            TaskAction::Cancel => TaskStatus::Canceled,
-            TaskAction::Assign => TaskStatus::InProgress,
-            TaskAction::Complete => TaskStatus::Completed,
-            TaskAction::Refuse => TaskStatus::Failed,
-
-            TaskAction::Bid => $this->status,
-
-            TaskAction::Create => throw new TaskActionException(
-                'The create action cannot be applied to an existing task.'
-            ),
-        };
+        return new self(
+            status: $status,
+            customerId: $this->customerId,
+            executorId: $this->executorId,
+        );
     }
 
-    public function getAvailableActions(int $userId): array
+    public function withExecutor(int $executorId): self
     {
-        $availableActionsForStatus = match ($this->status) {
-            TaskStatus::New => [
-                TaskAction::Cancel,
-                TaskAction::Bid,
-                TaskAction::Assign,
-            ],
-            TaskStatus::InProgress => [
-                TaskAction::Complete,
-                TaskAction::Refuse,
-            ],
-            TaskStatus::Canceled,
-            TaskStatus::Completed,
-            TaskStatus::Failed => [],
-        };
-
-        $allowedActionsForUser = [];
-        foreach ($availableActionsForStatus as $action) {
-            $actionObj = TaskActionFactory::create($action);
-            if ($actionObj->isAllowed($this->customerId, $this->executorId, $userId)) {
-                $allowedActionsForUser[$action->value] = $actionObj;
-            }
-        }
-
-        return $allowedActionsForUser;
-    }
-
-    public function getAllowedActions(UserRole $userRole): array
-    {
-        return match ($userRole) {
-            UserRole::Customer => [
-                TaskAction::Cancel,
-                TaskAction::Assign,
-                TaskAction::Complete,
-            ],
-            UserRole::Executor => [
-                TaskAction::Bid,
-                TaskAction::Refuse,
-            ],
-        };
-    }
-
-    public function act(TaskAction $action, UserRole $userRole, int $userId): TaskStatus
-    {
-        if (!in_array($action, $this->getAllowedActions($userRole), true)) {
-            throw new TaskActionException(
-                "User with role {$userRole->value} cannot perform action {$action->value}"
-            );
-        }
-
-        $availableActions = $this->getAvailableActions($userId);
-        if (!array_key_exists($action->value, $availableActions)) {
-            throw new TaskActionException(
-                "Action {$action->value} is unavailable for status {$this->status->value} and user: {$userId} "
-                . "on task with customer: {$this->customerId} "
-                . "and executor: " . ($this->executorId ? "#{$this->executorId}" : "null")
-            );
-        }
-
-        $nextStatus = $this->getNextStatusByAction($action);
-
-        if ($nextStatus !== $this->getStatus()) {
-            $this->setStatus($nextStatus);
-        }
-
-        return $this->getStatus();
-    }
-
-    public function setStatus(TaskStatus $status): void
-    {
-        $this->status = $status;
+        return new self(
+            status: $this->status,
+            customerId: $this->customerId,
+            executorId: $executorId,
+        );
     }
 
     public function getStatus(): TaskStatus
     {
         return $this->status;
+    }
+
+    public function getCustomerId(): int
+    {
+        return $this->customerId;
+    }
+
+    public function getExecutorId(): ?int
+    {
+        return $this->executorId;
     }
 }
