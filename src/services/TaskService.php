@@ -22,7 +22,7 @@ final readonly class TaskService
         TaskAction $actionType,
         User $user,
         array $parameters = [],
-    ) {
+    ): Task {
         if (!$this->stateMachine->isActionAvailable(
             $task,
             $actionType
