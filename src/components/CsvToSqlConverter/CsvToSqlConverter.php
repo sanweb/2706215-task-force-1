@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sanweb\Taskforce\components\CsvToSqlConverter;
 
+use InvalidArgumentException;
 use Sanweb\Taskforce\exception\FileException;
 use SplFileObject;
 
@@ -11,7 +12,6 @@ final class CsvToSqlConverter
 {
     private SplFileObject $reader;
     private array $options = [
-        //'encoding' => 'UTF-8',
         'delimiter' => ',',
         'enclosure' => '"',
         'escape' => '',
@@ -47,7 +47,12 @@ final class CsvToSqlConverter
     {
         $reader = new SplFileObject($file, 'rb');
 
-        $reader->setFlags(SplFileObject::READ_CSV | SplFileObject::SKIP_EMPTY);
+        $reader->setFlags(
+            SplFileObject::READ_CSV
+                | SplFileObject::SKIP_EMPTY
+                | SplFileObject::READ_AHEAD
+                | SplFileObject::DROP_NEW_LINE,
+        );
 
         $reader->setCsvControl(
             $this->options['delimiter'],
@@ -73,22 +78,170 @@ final class CsvToSqlConverter
 
     public function read(): iterable
     {
+        $this->reader->rewind();
+
+        $isFirstRow = true;
+
         foreach ($this->reader as $row) {
-            if (is_array($row)) {
-                yield $row;
+            if (!is_array($row) || $this->isEmptyRow($row)) {
+                continue;
             }
+
+            if ($isFirstRow) {
+                $row = $this->removeBom($row);
+                $isFirstRow = false;
+            }
+
+            yield $row;
         }
     }
 
-    protected function convertToSql(array $data): string
+    private function isEmptyRow(array $row): bool
     {
-        $sql = '';
+        foreach ($row as $value) {
+            if ($value !== null && trim($value) !== '') {
+                return false;
+            }
+        }
 
-        return $sql;
+        return true;
     }
 
-    protected function saveSqlFile(): bool
+    private function removeBom(array $row): array
     {
-        return true;
+        if (
+            isset($row[0])
+            && str_starts_with($row[0], "\xEF\xBB\xBF")
+        ) {
+            $row[0] = substr($row[0], 3);
+        }
+
+        return $row;
+    }
+
+    public function convert(
+        string $outputFile,
+        string $table,
+        array $fields,
+    ): void {
+        $this->validateConversionParameters($table, $fields);
+
+        $writer = new SplFileObject($outputFile, 'wb');
+
+        $header = null;
+        $fieldIndexes = [];
+        $isFirstValueRow = true;
+
+        foreach ($this->read() as $row) {
+            if ($header === null) {
+                $header = $row;
+                $fieldIndexes = $this->mapFields($header, $fields);
+
+                continue;
+            }
+
+            $values = $this->convertRow($row, $fieldIndexes);
+
+            if ($isFirstValueRow) {
+                $columns = implode(
+                    ', ',
+                    array_map(
+                        static fn (string $column): string => "`$column`",
+                        array_values($fields),
+                    ),
+                );
+
+                $writer->fwrite("INSERT INTO `$table` ($columns) VALUES" . PHP_EOL);
+
+                $isFirstValueRow = false;
+            } else {
+                $writer->fwrite(',' . PHP_EOL);
+            }
+
+            $writer->fwrite('(' . implode(', ', $values) . ')',);
+        }
+
+        if ($isFirstValueRow) {
+            throw new FileException('CSV file does not contain any data rows.');
+        }
+
+        $writer->fwrite(';' . PHP_EOL);
+    }
+
+    private function validateConversionParameters(
+        string $table,
+        array $fields,
+    ): void {
+        if ($fields === []) {
+            throw new InvalidArgumentException('Fields must not be empty.');
+        }
+
+        $this->validateIdentifier($table);
+
+        foreach ($fields as $csvField => $sqlField) {
+            if (!is_string($csvField) || !is_string($sqlField)) {
+                throw new InvalidArgumentException('CSV and SQL field names must be strings.');
+            }
+
+            $this->validateIdentifier($sqlField);
+        }
+    }
+
+    private function validateIdentifier(string $identifier): void
+    {
+        if (preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $identifier) !== 1) {
+            throw new InvalidArgumentException("Invalid SQL identifier \"$identifier\".");
+        }
+    }
+
+    private function mapFields(
+        array $header,
+        array $fields,
+    ): array {
+        $indexes = [];
+
+        foreach (array_keys($fields) as $csvField) {
+            $index = array_search($csvField, $header, true);
+
+            if ($index === false) {
+                throw new FileException("CSV field \"$csvField\" not found.");
+            }
+
+            $indexes[] = $index;
+        }
+
+        return $indexes;
+    }
+
+    private function convertRow(
+        array $row,
+        array $fieldIndexes,
+    ): array {
+        $result = [];
+
+        foreach ($fieldIndexes as $index) {
+            if (!array_key_exists($index, $row)) {
+                throw new FileException('CSV row contains fewer fields than expected.');
+            }
+
+            $result[] = $this->quoteValue($row[$index]);
+        }
+
+        return $result;
+    }
+
+    private function quoteValue(?string $value): string
+    {
+        if ($value === null) {
+            return 'NULL';
+        }
+
+        $escapedValue = str_replace(
+            ["\\", "'"],
+            ["\\\\", "''"],
+            $value,
+        );
+
+        return "'$escapedValue'";
     }
 }
