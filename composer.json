@@ -1,6 +1,6 @@
 {
     "name": "sanweb/taskforce-yii2",
-    "description": "Yii 2 Basic Project Template",
+    "description": "TaskForce PHP/Yii2 learning project (based on yii2-app-basic)",
     "keywords": ["yii2", "framework", "basic", "project template"],
     "homepage": "https://www.yiiframework.com/",
     "type": "project",
@@ -13,6 +13,16 @@
         "source": "https://github.com/yiisoft/yii2"
     },
     "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "Sanweb\\Taskforce\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "sanweb"
+        }
+    ],
     "require": {
         "php": ">=7.4.0",
         "yiisoft/yii2": "~2.0.45",
