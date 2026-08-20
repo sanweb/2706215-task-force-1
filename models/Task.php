@@ -1,8 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace app\models;
 
-use Yii;
+use Sanweb\Taskforce\enum\TaskStatus;
+use yii\base\InvalidConfigException;
+use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "task".
@@ -18,28 +23,26 @@ use Yii;
  * @property string $status
  * @property string|null $location
  * @property int|null $city_id
- * @property float|null $lat
- * @property float|null $lng
+ * @property string|null $lat
+ * @property string|null $lng
  * @property string $created_at
  * @property string|null $updated_at
  *
  * @property Attachment[] $attachments
- * @property Bid[] $bs
+ * @property Bid[] $bids
  * @property Category $category
  * @property City $city
  * @property User $customer
  * @property User $executor
  * @property Review $review
- * @property User[] $users
+ * @property User[] $bidders
  */
-class Task extends \yii\db\ActiveRecord
+class Task extends ActiveRecord
 {
-
-
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return 'task';
     }
@@ -47,29 +50,34 @@ class Task extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
-            [['executor_id', 'location', 'city_id', 'lat', 'lng', 'updated_at'], 'default', 'value' => null],
-            [['status'], 'default', 'value' => 'new'],
+            [['title', 'description', 'location'], 'trim'],
+            [['executor_id', 'location', 'city_id', 'lat', 'lng'], 'default', 'value' => null],
+            [['status'], 'default', 'value' => TaskStatus::New->value],
+
             [['customer_id', 'category_id', 'title', 'description', 'budget', 'expire_date'], 'required'],
-            [['customer_id', 'category_id', 'executor_id', 'budget', 'city_id'], 'integer'],
+            [['customer_id', 'category_id', 'executor_id', 'city_id'], 'integer'],
+            [['budget'], 'integer', 'min' => 1],
             [['description'], 'string'],
-            [['expire_date', 'created_at', 'updated_at'], 'safe'],
+            [['expire_date'], 'date', 'format' => 'php:Y-m-d'],
             [['lat', 'lng'], 'number'],
             [['title', 'location'], 'string', 'max' => 255],
-            [['status'], 'string', 'max' => 32],
-            [['category_id'], 'exist', 'skipOnError' => true, 'targetClass' => Category::class, 'targetAttribute' => ['category_id' => 'id']],
-            [['city_id'], 'exist', 'skipOnError' => true, 'targetClass' => City::class, 'targetAttribute' => ['city_id' => 'id']],
-            [['customer_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['customer_id' => 'id']],
-            [['executor_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['executor_id' => 'id']],
+
+            [['status'], 'in', 'range' => TaskStatus::values()],
+
+            [['category_id'], 'exist', 'targetClass' => Category::class, 'targetAttribute' => ['category_id' => 'id']],
+            [['city_id'], 'exist', 'targetClass' => City::class, 'targetAttribute' => ['city_id' => 'id']],
+            [['customer_id'], 'exist', 'targetClass' => User::class, 'targetAttribute' => ['customer_id' => 'id']],
+            [['executor_id'], 'exist', 'targetClass' => User::class, 'targetAttribute' => ['executor_id' => 'id']],
         ];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -91,83 +99,71 @@ class Task extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[Attachments]].
-     *
-     * @return \yii\db\ActiveQuery
+     * Returns the attachments associated with this task.
      */
-    public function getAttachments()
+    public function getAttachments(): ActiveQuery
     {
         return $this->hasMany(Attachment::class, ['task_id' => 'id']);
     }
 
     /**
-     * Gets query for [[Bs]].
-     *
-     * @return \yii\db\ActiveQuery
+     * Returns the bids submitted for this task.
      */
-    public function getBs()
+    public function getBids(): ActiveQuery
     {
         return $this->hasMany(Bid::class, ['task_id' => 'id']);
     }
 
     /**
-     * Gets query for [[Category]].
-     *
-     * @return \yii\db\ActiveQuery
+     * Returns the category of this task.
      */
-    public function getCategory()
+    public function getCategory(): ActiveQuery
     {
         return $this->hasOne(Category::class, ['id' => 'category_id']);
     }
 
     /**
-     * Gets query for [[City]].
-     *
-     * @return \yii\db\ActiveQuery
+     * Returns the city associated with this task.
      */
-    public function getCity()
+    public function getCity(): ActiveQuery
     {
         return $this->hasOne(City::class, ['id' => 'city_id']);
     }
 
     /**
-     * Gets query for [[Customer]].
-     *
-     * @return \yii\db\ActiveQuery
+     * Returns the customer who created this task.
      */
-    public function getCustomer()
+    public function getCustomer(): ActiveQuery
     {
         return $this->hasOne(User::class, ['id' => 'customer_id']);
     }
 
     /**
-     * Gets query for [[Executor]].
-     *
-     * @return \yii\db\ActiveQuery
+     * Returns the executor assigned to this task.
      */
-    public function getExecutor()
+    public function getExecutor(): ActiveQuery
     {
         return $this->hasOne(User::class, ['id' => 'executor_id']);
     }
 
     /**
-     * Gets query for [[Review]].
-     *
-     * @return \yii\db\ActiveQuery
+     * Returns the review associated with this task.
      */
-    public function getReview()
+    public function getReview(): ActiveQuery
     {
         return $this->hasOne(Review::class, ['task_id' => 'id']);
     }
 
     /**
-     * Gets query for [[Users]].
+     * Returns the users who submitted bids for this task.
      *
-     * @return \yii\db\ActiveQuery
+     * @throws InvalidConfigException
      */
-    public function getUsers()
+    public function getBidders(): ActiveQuery
     {
-        return $this->hasMany(User::class, ['id' => 'user_id'])->viaTable('bid', ['task_id' => 'id']);
+        return $this->hasMany(
+            User::class,
+            ['id' => 'user_id']
+        )->viaTable('bid', ['task_id' => 'id']);
     }
-
 }

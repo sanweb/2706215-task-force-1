@@ -11,7 +11,7 @@ use yii\base\Security;
 /**
  * LoginForm is the model behind the login form.
  *
- * @property-read ?User $user
+ * @property-read User|null $user
  *
  */
 class LoginForm extends Model
@@ -48,7 +48,7 @@ class LoginForm extends Model
      * This method serves as the inline validation for password.
      *
      * @param string $attribute the attribute currently being validated
-     * @param ?array $params the additional name-value pairs given in the rule
+     * @param array|null $params the additional name-value pairs given in the rule
      */
     public function validatePassword(string $attribute, ?array $params): void
     {

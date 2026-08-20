@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace app\models;
 
-use Yii;
+use yii\base\InvalidConfigException;
+use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "category".
@@ -15,14 +19,12 @@ use Yii;
  * @property Task[] $tasks
  * @property User[] $users
  */
-class Category extends \yii\db\ActiveRecord
+class Category extends ActiveRecord
 {
-
-
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return 'category';
     }
@@ -30,10 +32,11 @@ class Category extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['name', 'slug'], 'required'],
+            [['name', 'slug'], 'trim'],
             [['name', 'slug'], 'string', 'max' => 64],
             [['name'], 'unique'],
             [['slug'], 'unique'],
@@ -43,7 +46,7 @@ class Category extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -53,33 +56,31 @@ class Category extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[ExecutorSpecializations]].
-     *
-     * @return \yii\db\ActiveQuery
+     * Gets executor specializations for this category.
      */
-    public function getExecutorSpecializations()
+    public function getExecutorSpecializations(): ActiveQuery
     {
         return $this->hasMany(ExecutorSpecialization::class, ['category_id' => 'id']);
     }
 
     /**
-     * Gets query for [[Tasks]].
-     *
-     * @return \yii\db\ActiveQuery
+     * Gets tasks in this category.
      */
-    public function getTasks()
+    public function getTasks(): ActiveQuery
     {
         return $this->hasMany(Task::class, ['category_id' => 'id']);
     }
 
     /**
-     * Gets query for [[Users]].
+     * Gets users specialized in this category.
      *
-     * @return \yii\db\ActiveQuery
+     * @throws InvalidConfigException
      */
-    public function getUsers()
+    public function getUsers(): ActiveQuery
     {
-        return $this->hasMany(User::class, ['id' => 'user_id'])->viaTable('executor_specialization', ['category_id' => 'id']);
+        return $this->hasMany(
+            User::class,
+            ['id' => 'user_id']
+        )->viaTable('executor_specialization', ['category_id' => 'id']);
     }
-
 }

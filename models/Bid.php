@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace app\models;
 
-use Yii;
+use Sanweb\Taskforce\enum\BidStatus;
+use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "bid".
@@ -18,14 +22,12 @@ use Yii;
  * @property Task $task
  * @property User $user
  */
-class Bid extends \yii\db\ActiveRecord
+class Bid extends ActiveRecord
 {
-
-
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return 'bid';
     }
@@ -33,25 +35,27 @@ class Bid extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
-            [['updated_at'], 'default', 'value' => null],
-            [['status'], 'default', 'value' => 'new'],
+            [['status'], 'default', 'value' => BidStatus::New->value],
+            [['status'], 'in', 'range' => BidStatus::values()],
+
             [['user_id', 'task_id', 'price'], 'required'],
-            [['user_id', 'task_id', 'price'], 'integer'],
-            [['created_at', 'updated_at'], 'safe'],
-            [['status'], 'string', 'max' => 16],
+            [['user_id', 'task_id'], 'integer'],
+            [['price'], 'integer', 'min' => 1],
+
             [['user_id', 'task_id'], 'unique', 'targetAttribute' => ['user_id', 'task_id']],
-            [['task_id'], 'exist', 'skipOnError' => true, 'targetClass' => Task::class, 'targetAttribute' => ['task_id' => 'id']],
-            [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['user_id' => 'id']],
+
+            [['task_id'], 'exist', 'targetClass' => Task::class, 'targetAttribute' => ['task_id' => 'id']],
+            [['user_id'], 'exist', 'targetClass' => User::class, 'targetAttribute' => ['user_id' => 'id']],
         ];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -65,23 +69,18 @@ class Bid extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[Task]].
-     *
-     * @return \yii\db\ActiveQuery
+     * Gets the task this bid belongs to.
      */
-    public function getTask()
+    public function getTask(): ActiveQuery
     {
         return $this->hasOne(Task::class, ['id' => 'task_id']);
     }
 
     /**
-     * Gets query for [[User]].
-     *
-     * @return \yii\db\ActiveQuery
+     * Gets the user who submitted this bid.
      */
-    public function getUser()
+    public function getUser(): ActiveQuery
     {
         return $this->hasOne(User::class, ['id' => 'user_id']);
     }
-
 }

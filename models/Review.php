@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace app\models;
 
-use Yii;
+use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "review".
@@ -19,14 +22,12 @@ use Yii;
  * @property User $executor
  * @property Task $task
  */
-class Review extends \yii\db\ActiveRecord
+class Review extends ActiveRecord
 {
-
-
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return 'review';
     }
@@ -34,25 +35,29 @@ class Review extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
+            [['comment'], 'trim'],
             [['comment'], 'default', 'value' => null],
+
             [['customer_id', 'task_id', 'executor_id', 'score'], 'required'],
-            [['customer_id', 'task_id', 'executor_id', 'score'], 'integer'],
+            [['customer_id', 'task_id', 'executor_id'], 'integer'],
+            [['score'], 'integer', 'min' => 1, 'max' => 5],
+
             [['comment'], 'string'],
-            [['created_at'], 'safe'],
             [['task_id'], 'unique'],
-            [['customer_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['customer_id' => 'id']],
-            [['executor_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['executor_id' => 'id']],
-            [['task_id'], 'exist', 'skipOnError' => true, 'targetClass' => Task::class, 'targetAttribute' => ['task_id' => 'id']],
+
+            [['customer_id'], 'exist', 'targetClass' => User::class, 'targetAttribute' => ['customer_id' => 'id']],
+            [['executor_id'], 'exist', 'targetClass' => User::class, 'targetAttribute' => ['executor_id' => 'id']],
+            [['task_id'], 'exist', 'targetClass' => Task::class, 'targetAttribute' => ['task_id' => 'id']],
         ];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -66,33 +71,26 @@ class Review extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[Customer]].
-     *
-     * @return \yii\db\ActiveQuery
+     * Returns the customer who created the review.
      */
-    public function getCustomer()
+    public function getCustomer(): ActiveQuery
     {
         return $this->hasOne(User::class, ['id' => 'customer_id']);
     }
 
     /**
-     * Gets query for [[Executor]].
-     *
-     * @return \yii\db\ActiveQuery
+     * Returns the executor being reviewed.
      */
-    public function getExecutor()
+    public function getExecutor(): ActiveQuery
     {
         return $this->hasOne(User::class, ['id' => 'executor_id']);
     }
 
     /**
-     * Gets query for [[Task]].
-     *
-     * @return \yii\db\ActiveQuery
+     * Returns the task associated with this review.
      */
-    public function getTask()
+    public function getTask(): ActiveQuery
     {
         return $this->hasOne(Task::class, ['id' => 'task_id']);
     }
-
 }

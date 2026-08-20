@@ -1,28 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace app\models;
 
-use Yii;
+use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "city".
  *
  * @property int $id
  * @property string $name
- * @property float $lat
- * @property float $lng
+ * @property string $lat Latitude stored as DECIMAL in the database.
+ * @property string $lng Longitude stored as DECIMAL in the database.
  *
  * @property Task[] $tasks
  * @property User[] $users
  */
-class City extends \yii\db\ActiveRecord
+class City extends ActiveRecord
 {
-
-
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return 'city';
     }
@@ -30,11 +31,12 @@ class City extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['name', 'lat', 'lng'], 'required'],
             [['lat', 'lng'], 'number'],
+            [['name'], 'trim'],
             [['name'], 'string', 'max' => 255],
             [['name'], 'unique'],
         ];
@@ -43,7 +45,7 @@ class City extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -54,23 +56,18 @@ class City extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[Tasks]].
-     *
-     * @return \yii\db\ActiveQuery
+     * Gets tasks located in this city.
      */
-    public function getTasks()
+    public function getTasks(): ActiveQuery
     {
         return $this->hasMany(Task::class, ['city_id' => 'id']);
     }
 
     /**
-     * Gets query for [[Users]].
-     *
-     * @return \yii\db\ActiveQuery
+     * Gets users from this city.
      */
-    public function getUsers()
+    public function getUsers(): ActiveQuery
     {
         return $this->hasMany(User::class, ['city_id' => 'id']);
     }
-
 }

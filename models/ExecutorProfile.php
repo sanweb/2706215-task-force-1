@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace app\models;
 
-use Yii;
+use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "executor_profile".
@@ -18,14 +21,12 @@ use Yii;
  *
  * @property User $user
  */
-class ExecutorProfile extends \yii\db\ActiveRecord
+class ExecutorProfile extends ActiveRecord
 {
-
-
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return 'executor_profile';
     }
@@ -33,26 +34,32 @@ class ExecutorProfile extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
-            [['phone', 'telegram', 'about', 'updated_at'], 'default', 'value' => null],
+            [['phone', 'telegram', 'about'], 'trim'],
+            [['phone', 'telegram', 'about'], 'default', 'value' => null],
             [['hide_my_contacts'], 'default', 'value' => 0],
+
             [['user_id'], 'required'],
-            [['user_id', 'hide_my_contacts'], 'integer'],
+            [['user_id'], 'integer'],
+
             [['about'], 'string'],
-            [['created_at', 'updated_at'], 'safe'],
+
+            [['hide_my_contacts'], 'boolean'],
+
             [['phone'], 'string', 'max' => 20],
             [['telegram'], 'string', 'max' => 64],
+
             [['user_id'], 'unique'],
-            [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['user_id' => 'id']],
+            [['user_id'], 'exist', 'targetClass' => User::class, 'targetAttribute' => ['user_id' => 'id']],
         ];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -67,13 +74,10 @@ class ExecutorProfile extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[User]].
-     *
-     * @return \yii\db\ActiveQuery
+     * Returns the executor who owns this profile.
      */
-    public function getUser()
+    public function getUser(): ActiveQuery
     {
         return $this->hasOne(User::class, ['id' => 'user_id']);
     }
-
 }
