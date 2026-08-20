@@ -4,71 +4,68 @@ declare(strict_types=1);
 
 namespace app\models;
 
-use yii\base\BaseObject;
+use yii\base\InvalidConfigException;
+use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
 
-class User extends BaseObject implements IdentityInterface
+/**
+ * This is the model class for table "user".
+ *
+ * @property int $id
+ * @property string $email
+ * @property string $name
+ * @property string|null $password
+ * @property int|null $city_id
+ * @property string|null $avatar
+ * @property string|null $birthday
+ * @property int $is_executor
+ * @property string $created_at
+ * @property string|null $updated_at
+ * @property Bid[] $bids
+ * @property Category[] $categories
+ * @property City|null $city
+ * @property ExecutorProfile|null $executorProfile
+ * @property ExecutorSpecialization[] $executorSpecializations
+ * @property Review[] $sentReviews
+ * @property Review[] $receivedReviews
+ * @property Task[] $customerTasks
+ * @property Task[] $executorTasks
+ * @property Task[] $bidTasks
+ */
+class User extends ActiveRecord implements IdentityInterface
 {
-    public int|string $id = '';
-    public string $username = '';
-    public string $passwordHash = '';
-    public string $authKey = '';
-    public string $accessToken = '';
-    private static array $_users = [
-        '100' => [
-            'id' => '100',
-            'username' => 'admin',
-            // password: admin
-            'passwordHash' => '$2y$13$gYAywKSkhfZDq9FLNdm7buKnvlRxDexf5xipSMAxQPDUxpaptmZJu',
-            'authKey' => 'test100key',
-            'accessToken' => '100-token',
-        ],
-        '101' => [
-            'id' => '101',
-            'username' => 'demo',
-            // password: demo
-            'passwordHash' => '$2y$13$alRLq1PGVMlGYwS/Y3iy3ewQns1Z8ol8Iq6Zb5k7ZwEhblA1aL29y',
-            'authKey' => 'test101key',
-            'accessToken' => '101-token',
-        ],
-    ];
     /**
      * {@inheritdoc}
      */
-    public static function findIdentity($id): static|null
+    public static function findIdentity($id): ?static
     {
-        return isset(self::$_users[$id]) ? new static(self::$_users[$id]) : null;
+        return static::findOne($id);
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function findIdentityByAccessToken($token, $type = null): static|null
+    public static function findIdentityByAccessToken($token, $type = null): ?static
     {
-        foreach (self::$_users as $user) {
-            if ($user['accessToken'] === $token) {
-                return new static($user);
-            }
-        }
-
+        // return static::findOne(['access_token' => $token]);
         return null;
     }
 
     /**
-     * Finds user by username
-     *
-     * @param string $username
-     * @return static|null
+     * @deprecated Use findByEmail() instead.
      */
-    public static function findByUsername(string $username): static|null
+    public static function findByUsername(string $username): ?static
     {
-        foreach (self::$_users as $user) {
-            if (strcasecmp($user['username'], $username) === 0) {
-                return new static($user);
-            }
-        }
-
         return null;
+    }
+
+    /**
+     * Finds user by email.
+     */
+    public static function findByEmail(string $email): ?static
+    {
+        return static::findOne(['email' => $email]);
     }
 
     /**
@@ -82,9 +79,9 @@ class User extends BaseObject implements IdentityInterface
     /**
      * {@inheritdoc}
      */
-    public function getAuthKey(): string|null
+    public function getAuthKey(): ?string
     {
-        return $this->authKey;
+        return null;
     }
 
     /**
@@ -92,6 +89,150 @@ class User extends BaseObject implements IdentityInterface
      */
     public function validateAuthKey($authKey): bool
     {
-        return $this->authKey === $authKey;
+        return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function tableName(): string
+    {
+        return 'user';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function rules(): array
+    {
+        return [
+            [['password', 'city_id', 'avatar', 'birthday', 'updated_at'], 'default', 'value' => null],
+            [['is_executor'], 'default', 'value' => 0],
+
+            [['email', 'name'], 'required'],
+            [['email', 'name'], 'trim'],
+
+            [['city_id'], 'integer'],
+            [['is_executor'], 'boolean'],
+
+            [['birthday'], 'date', 'format' => 'php:Y-m-d'],
+
+            [['email', 'password', 'avatar'], 'string', 'max' => 255],
+            [['name'], 'string', 'max' => 128],
+
+            [['email'], 'email'],
+            [['email'], 'unique'],
+
+            [['city_id'], 'exist', 'targetClass' => City::class, 'targetAttribute' => ['city_id' => 'id']],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function attributeLabels(): array
+    {
+        return [
+            'id' => 'ID',
+            'email' => 'Email',
+            'name' => 'Name',
+            'password' => 'Password',
+            'city_id' => 'City ID',
+            'avatar' => 'Avatar',
+            'birthday' => 'Birthday',
+            'is_executor' => 'Is Executor',
+            'created_at' => 'Created At',
+            'updated_at' => 'Updated At',
+        ];
+    }
+
+    /**
+     * Gets bids submitted by this user.
+     */
+    public function getBids(): ActiveQuery
+    {
+        return $this->hasMany(Bid::class, ['user_id' => 'id']);
+    }
+
+    /**
+     * Gets categories this user specializes in.
+     *
+     * @throws InvalidConfigException
+     */
+    public function getCategories(): ActiveQuery
+    {
+        return $this->hasMany(
+            Category::class,
+            ['id' => 'category_id']
+        )->viaTable('executor_specialization', ['user_id' => 'id']);
+    }
+
+    /**
+     * Gets the user's city.
+     */
+    public function getCity(): ActiveQuery
+    {
+        return $this->hasOne(City::class, ['id' => 'city_id']);
+    }
+
+    /**
+     * Gets the user's executor profile.
+     */
+    public function getExecutorProfile(): ActiveQuery
+    {
+        return $this->hasOne(ExecutorProfile::class, ['user_id' => 'id']);
+    }
+
+    /**
+     * Gets the user's executor specializations.
+     */
+    public function getExecutorSpecializations(): ActiveQuery
+    {
+        return $this->hasMany(ExecutorSpecialization::class, ['user_id' => 'id']);
+    }
+
+    /**
+     * Gets reviews sent by this user.
+     */
+    public function getSentReviews(): ActiveQuery
+    {
+        return $this->hasMany(Review::class, ['customer_id' => 'id']);
+    }
+
+    /**
+     * Gets reviews received by this user.
+     */
+    public function getReceivedReviews(): ActiveQuery
+    {
+        return $this->hasMany(Review::class, ['executor_id' => 'id']);
+    }
+
+    /**
+     * Gets tasks created by this user.
+     */
+    public function getCustomerTasks(): ActiveQuery
+    {
+        return $this->hasMany(Task::class, ['customer_id' => 'id']);
+    }
+
+    /**
+     * Gets tasks assigned to this user.
+     */
+    public function getExecutorTasks(): ActiveQuery
+    {
+        return $this->hasMany(Task::class, ['executor_id' => 'id']);
+    }
+
+    /**
+     * Gets tasks this user has bid on.
+     *
+     * @throws InvalidConfigException
+     */
+    public function getBidTasks(): ActiveQuery
+    {
+        return $this->hasMany(
+            Task::class,
+            ['id' => 'task_id']
+        )->viaTable('bid', ['user_id' => 'id']);
     }
 }
