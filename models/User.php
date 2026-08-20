@@ -1,181 +1,97 @@
 <?php
 
+declare(strict_types=1);
+
 namespace app\models;
 
-use Yii;
+use yii\base\BaseObject;
+use yii\web\IdentityInterface;
 
-/**
- * This is the model class for table "user".
- *
- * @property int $id
- * @property string $email
- * @property string $name
- * @property string|null $password
- * @property int|null $city_id
- * @property string|null $avatar
- * @property string|null $birthday
- * @property int $is_executor
- * @property string $created_at
- * @property string|null $updated_at
- *
- * @property Bid[] $bs
- * @property Category[] $categories
- * @property City $city
- * @property ExecutorProfile $executorProfile
- * @property ExecutorSpecialization[] $executorSpecializations
- * @property Review[] $reviews
- * @property Review[] $reviews0
- * @property Task[] $tasks
- * @property Task[] $tasks0
- * @property Task[] $tasks1
- */
-class User extends \yii\db\ActiveRecord
+class User extends BaseObject implements IdentityInterface
 {
-
+    public int|string $id = '';
+    public string $username = '';
+    public string $passwordHash = '';
+    public string $authKey = '';
+    public string $accessToken = '';
+    private static array $_users = [
+        '100' => [
+            'id' => '100',
+            'username' => 'admin',
+            // password: admin
+            'passwordHash' => '$2y$13$gYAywKSkhfZDq9FLNdm7buKnvlRxDexf5xipSMAxQPDUxpaptmZJu',
+            'authKey' => 'test100key',
+            'accessToken' => '100-token',
+        ],
+        '101' => [
+            'id' => '101',
+            'username' => 'demo',
+            // password: demo
+            'passwordHash' => '$2y$13$alRLq1PGVMlGYwS/Y3iy3ewQns1Z8ol8Iq6Zb5k7ZwEhblA1aL29y',
+            'authKey' => 'test101key',
+            'accessToken' => '101-token',
+        ],
+    ];
+    /**
+     * {@inheritdoc}
+     */
+    public static function findIdentity($id): static|null
+    {
+        return isset(self::$_users[$id]) ? new static(self::$_users[$id]) : null;
+    }
 
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function findIdentityByAccessToken($token, $type = null): static|null
     {
-        return 'user';
+        foreach (self::$_users as $user) {
+            if ($user['accessToken'] === $token) {
+                return new static($user);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Finds user by username
+     *
+     * @param string $username
+     * @return static|null
+     */
+    public static function findByUsername(string $username): static|null
+    {
+        foreach (self::$_users as $user) {
+            if (strcasecmp($user['username'], $username) === 0) {
+                return new static($user);
+            }
+        }
+
+        return null;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function getId(): int|string
     {
-        return [
-            [['password', 'city_id', 'avatar', 'birthday', 'updated_at'], 'default', 'value' => null],
-            [['is_executor'], 'default', 'value' => 0],
-            [['email', 'name'], 'required'],
-            [['city_id', 'is_executor'], 'integer'],
-            [['birthday', 'created_at', 'updated_at'], 'safe'],
-            [['email', 'password', 'avatar'], 'string', 'max' => 255],
-            [['name'], 'string', 'max' => 128],
-            [['email'], 'unique'],
-            [['city_id'], 'exist', 'skipOnError' => true, 'targetClass' => City::class, 'targetAttribute' => ['city_id' => 'id']],
-        ];
+        return $this->id;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function getAuthKey(): string|null
     {
-        return [
-            'id' => 'ID',
-            'email' => 'Email',
-            'name' => 'Name',
-            'password' => 'Password',
-            'city_id' => 'City ID',
-            'avatar' => 'Avatar',
-            'birthday' => 'Birthday',
-            'is_executor' => 'Is Executor',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
-        ];
+        return $this->authKey;
     }
 
     /**
-     * Gets query for [[Bs]].
-     *
-     * @return \yii\db\ActiveQuery
+     * {@inheritdoc}
      */
-    public function getBs()
+    public function validateAuthKey($authKey): bool
     {
-        return $this->hasMany(Bid::class, ['user_id' => 'id']);
+        return $this->authKey === $authKey;
     }
-
-    /**
-     * Gets query for [[Categories]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getCategories()
-    {
-        return $this->hasMany(Category::class, ['id' => 'category_id'])->viaTable('executor_specialization', ['user_id' => 'id']);
-    }
-
-    /**
-     * Gets query for [[City]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getCity()
-    {
-        return $this->hasOne(City::class, ['id' => 'city_id']);
-    }
-
-    /**
-     * Gets query for [[ExecutorProfile]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getExecutorProfile()
-    {
-        return $this->hasOne(ExecutorProfile::class, ['user_id' => 'id']);
-    }
-
-    /**
-     * Gets query for [[ExecutorSpecializations]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getExecutorSpecializations()
-    {
-        return $this->hasMany(ExecutorSpecialization::class, ['user_id' => 'id']);
-    }
-
-    /**
-     * Gets query for [[Reviews]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getReviews()
-    {
-        return $this->hasMany(Review::class, ['customer_id' => 'id']);
-    }
-
-    /**
-     * Gets query for [[Reviews0]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getReviews0()
-    {
-        return $this->hasMany(Review::class, ['executor_id' => 'id']);
-    }
-
-    /**
-     * Gets query for [[Tasks]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getTasks()
-    {
-        return $this->hasMany(Task::class, ['customer_id' => 'id']);
-    }
-
-    /**
-     * Gets query for [[Tasks0]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getTasks0()
-    {
-        return $this->hasMany(Task::class, ['executor_id' => 'id']);
-    }
-
-    /**
-     * Gets query for [[Tasks1]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getTasks1()
-    {
-        return $this->hasMany(Task::class, ['id' => 'task_id'])->viaTable('bid', ['user_id' => 'id']);
-    }
-
 }

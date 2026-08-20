@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'class' => 'yii\db\Connection',
+    'class' => \yii\db\Connection::class,
     'dsn' => sprintf(
         'mysql:host=%s;port=%s;dbname=%s',
         $_ENV['DB_HOST'],
