@@ -13,27 +13,27 @@ $this->render('_head');
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
-<html lang="<?= Yii::$app->language ?>" class="h-100" data-bs-theme="light">
+<html lang="<?= Yii::$app->language ?>">
 <head>
+    <!-- <meta charset="utf-8"> -->
+    <!-- <meta name="viewport" content="width=device-width,initial-scale=1"> -->
+    <!-- <title>Taskforce</title> -->
     <?php $this->head() ?>
     <title><?= Html::encode($this->title) ?></title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="d-flex flex-column h-100">
+<body>
 <?php $this->beginBody() ?>
 
 <?= $this->render('_header') ?>
 
-<main id="main" class="flex-grow-1" role="main">
-    <div class="container">
-        <?php if (!empty($this->params['breadcrumbs'])): ?>
-            <?= Breadcrumbs::widget(['links' => $this->params['breadcrumbs']]) ?>
-        <?php endif ?>
-        <?= Alert::widget() ?>
-        <?= $content ?>
-    </div>
+<main class="main-content container">
+    <?php if (!empty($this->params['breadcrumbs'])): ?>
+        <?= Breadcrumbs::widget(['links' => $this->params['breadcrumbs']]) ?>
+    <?php endif ?>
+    <?= Alert::widget() ?>
+    <?= $content ?>
 </main>
-
-<?= $this->render('_footer') ?>
 
 <?php $this->endBody() ?>
 </body>
