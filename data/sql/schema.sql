@@ -1,8 +1,8 @@
-CREATE DATABASE IF NOT EXISTS taskforce_db
+CREATE DATABASE IF NOT EXISTS taskforce_yii2_db
     DEFAULT CHARACTER SET utf8mb4
     DEFAULT COLLATE utf8mb4_0900_ai_ci;
 
-USE taskforce_db;
+USE taskforce_yii2_db;
 
 -- City dictionary; created before `user` because of the foreign key
 CREATE TABLE IF NOT EXISTS `city` (

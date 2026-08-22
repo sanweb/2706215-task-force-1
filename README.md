@@ -1,7 +1,9 @@
 <p align="center">
-    <a href="https://github.com/yiisoft" target="_blank">
-        <img src="https://avatars0.githubusercontent.com/u/993323" height="100px">
-    </a>
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://www.yiiframework.com/image/design/logo/yii3_full_for_dark.svg">
+        <source media="(prefers-color-scheme: light)" srcset="https://www.yiiframework.com/image/design/logo/yii3_full_for_light.svg">
+        <img src="https://www.yiiframework.com/image/design/logo/yii3_full_for_light.svg" alt="Yii Framework" height="100">
+    </picture>
     <h1 align="center">Yii 2 Basic Project Template</h1>
     <br>
 </p>
@@ -13,9 +15,21 @@ The template contains the basic features including user login/logout and a conta
 It includes all commonly used configurations that would allow you to focus on adding new
 features to your application.
 
-[![Latest Stable Version](https://img.shields.io/packagist/v/yiisoft/yii2-app-basic.svg)](https://packagist.org/packages/yiisoft/yii2-app-basic)
-[![Total Downloads](https://img.shields.io/packagist/dt/yiisoft/yii2-app-basic.svg)](https://packagist.org/packages/yiisoft/yii2-app-basic)
-[![build](https://github.com/yiisoft/yii2-app-basic/workflows/build/badge.svg)](https://github.com/yiisoft/yii2-app-basic/actions?query=workflow%3Abuild)
+[![Latest Stable Version](https://img.shields.io/packagist/v/yiisoft/yii2-app-basic.svg?style=for-the-badge&label=Stable&logo=packagist)](https://packagist.org/packages/yiisoft/yii2-app-basic)
+[![Total Downloads](https://img.shields.io/packagist/dt/yiisoft/yii2-app-basic.svg?style=for-the-badge&label=Downloads)](https://packagist.org/packages/yiisoft/yii2-app-basic)
+[![build](https://img.shields.io/github/actions/workflow/status/yiisoft/yii2-app-basic/build.yml?style=for-the-badge&logo=github&label=Build)](https://github.com/yiisoft/yii2-app-basic/actions?query=workflow%3Abuild)
+[![codecov](https://img.shields.io/codecov/c/github/yiisoft/yii2-app-basic.svg?style=for-the-badge&logo=codecov&logoColor=white&label=Codecov)](https://codecov.io/gh/yiisoft/yii2-app-basic)
+[![Static Analysis](https://img.shields.io/github/actions/workflow/status/yiisoft/yii2-app-basic/static.yml?style=for-the-badge&label=Static)](https://github.com/yiisoft/yii2-app-basic/actions/workflows/static.yml)
+
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/home-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/images/home-light.png">
+    <img src="docs/images/home-light.png" alt="Web Application Basic">
+</picture>
+
+## Docker
+
+[![Apache](https://img.shields.io/github/actions/workflow/status/yiisoft/yii2-app-basic/docker.yml?style=for-the-badge&logo=apache&label=Apache)](https://github.com/yiisoft/yii2-app-basic/actions/workflows/docker.yml)
 
 DIRECTORY STRUCTURE
 -------------------
@@ -32,18 +46,18 @@ DIRECTORY STRUCTURE
       views/              contains view files for the Web application
       web/                contains the entry script and Web resources
 
-
-
 REQUIREMENTS
 ------------
 
-The minimum requirement by this project template that your Web server supports PHP 7.4.
-
+The minimum requirement by this project template that your Web server supports PHP 8.2.
 
 INSTALLATION
 ------------
 
-### Install via Composer
+> [!IMPORTANT]
+> - The minimum required [PHP](https://www.php.net/) version of Yii is PHP `8.2`.
+
+## Install via Composer
 
 If you do not have [Composer](https://getcomposer.org/), you may install it by following the instructions
 at [getcomposer.org](https://getcomposer.org/doc/00-intro.md#installation-nix).
@@ -61,7 +75,7 @@ directly under the Web root.
 http://localhost/basic/web/
 ~~~
 
-### Install from an Archive File
+## Install from an Archive File
 
 Extract the archive file downloaded from [yiiframework.com](https://www.yiiframework.com/download/) to
 a directory named `basic` that is directly under the Web root.
@@ -81,8 +95,7 @@ You can then access the application through the following URL:
 http://localhost/basic/web/
 ~~~
 
-
-### Install with Docker
+## Install with Docker
 
 Update your vendor packages
 
@@ -100,15 +113,20 @@ You can then access the application through the following URL:
 
     http://127.0.0.1:8000
 
+Run tests inside the container
+
+    docker compose exec -T php vendor/bin/codecept build
+    docker compose exec -T php vendor/bin/codecept run
+
 **NOTES:** 
 - Minimum required Docker engine version `17.04` for development (see [Performance tuning for volume mounts](https://docs.docker.com/docker-for-mac/osxfs-caching/))
-- The default configuration uses a host-volume in your home directory `.docker-composer` for composer caches
+- The default configuration uses a host-volume in your home directory `~/.composer-docker/cache` for Composer caches
 
 
 CONFIGURATION
 -------------
 
-### Database
+## Database
 
 Edit the file `config/db.php` with real data, for example:
 
@@ -127,7 +145,6 @@ return [
 - Check and edit the other files in the `config/` directory to customize your application as required.
 - Refer to the README in the `tests` directory for information specific to basic application tests.
 
-
 TESTING
 -------
 
@@ -141,93 +158,77 @@ By default, there are 3 test suites:
 Tests can be executed by running
 
 ```
-vendor/bin/codecept run
+vendor/bin/codecept run --env php-builtin
 ```
 
 The command above will execute unit and functional tests. Unit tests are testing the system components, while functional
-tests are for testing user interaction. Acceptance tests are disabled by default as they require additional setup since
-they perform testing in real browser. 
+tests are for testing user interaction.
 
 
-### Running  acceptance tests
+## Acceptance tests
 
-To execute acceptance tests do the following:  
+The `acceptance` suite is configured in `tests/Acceptance.suite.yml`.
 
-1. Rename `tests/acceptance.suite.yml.example` to `tests/acceptance.suite.yml` to enable suite configuration
+### Acceptance tests (PhpBrowser)
 
-2. Replace `codeception/base` package in `composer.json` with `codeception/codeception` to install full-featured
-   version of Codeception
+By default, acceptance tests use the `PhpBrowser` module and run against the built-in PHP web server started via the
+`php-builtin` environment.
 
-3. Update dependencies with Composer 
+```
+# run all tests with built-in web server
+composer tests
 
-    ```
-    composer update  
-    ```
+# run acceptance tests only
+vendor/bin/codecept run Acceptance --env php-builtin
+```
 
-4. Download [Selenium Server](https://www.seleniumhq.org/download/) and launch it:
+### Acceptance tests (WebDriver + Selenium)
 
-    ```
-    java -jar ~/selenium-server-standalone-x.xx.x.jar
-    ```
+To run acceptance tests in a real browser, switch the `acceptance` suite to use the `WebDriver` module.
+`tests/Acceptance.suite.yml` contains an example WebDriver configuration (commented).
 
-    In case of using Selenium Server 3.0 with Firefox browser since v48 or Google Chrome since v53 you must download [GeckoDriver](https://github.com/mozilla/geckodriver/releases) or [ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/downloads) and launch Selenium with it:
+1. Download and start [Selenium Server](https://www.selenium.dev/downloads/).
+2. Install the corresponding browser driver (for example. [GeckoDriver](https://github.com/mozilla/geckodriver/releases) or
+   [ChromeDriver](https://googlechromelabs.github.io/chrome-for-testing/)).
+3. Update `tests/Acceptance.suite.yml` to enable `WebDriver` and disable `PhpBrowser`.
+4. Run:
 
-    ```
-    # for Firefox
-    java -jar -Dwebdriver.gecko.driver=~/geckodriver ~/selenium-server-standalone-3.xx.x.jar
-    
-    # for Google Chrome
-    java -jar -Dwebdriver.chrome.driver=~/chromedriver ~/selenium-server-standalone-3.xx.x.jar
-    ``` 
-    
-    As an alternative way you can use already configured Docker container with older versions of Selenium and Firefox:
-    
-    ```
-    docker run --net=host selenium/standalone-firefox:2.53.0
-    ```
+```
+vendor/bin/codecept run Acceptance --env php-builtin
+```
 
-5. (Optional) Create `yii2basic_test` database and update it by applying migrations if you have them.
+## Code coverage support
 
-   ```
-   tests/bin/yii migrate
-   ```
-
-   The database configuration can be found at `config/test_db.php`.
-
-
-6. Start web server:
-
-    ```
-    tests/bin/yii serve
-    ```
-
-7. Now you can run all available tests
-
-   ```
-   # run all available tests
-   vendor/bin/codecept run
-
-   # run acceptance tests
-   vendor/bin/codecept run acceptance
-
-   # run only unit and functional tests
-   vendor/bin/codecept run unit,functional
-   ```
-
-### Code coverage support
-
-By default, code coverage is disabled in `codeception.yml` configuration file, you should uncomment needed rows to be able
-to collect code coverage. You can run your tests and collect coverage with the following command:
+Code coverage is configured in `codeception.yml`. You can run your tests and collect coverage with the following command:
 
 ```
 #collect coverage for all tests
-vendor/bin/codecept run --coverage --coverage-html --coverage-xml
+vendor/bin/codecept run --coverage --coverage-html --coverage-xml --env php-builtin
 
 #collect coverage only for unit tests
-vendor/bin/codecept run unit --coverage --coverage-html --coverage-xml
+vendor/bin/codecept run Unit --coverage --coverage-html --coverage-xml --env php-builtin
 
 #collect coverage for unit and functional tests
-vendor/bin/codecept run functional,unit --coverage --coverage-html --coverage-xml
+vendor/bin/codecept run Functional,Unit --coverage --coverage-html --coverage-xml --env php-builtin
 ```
 
-You can see code coverage output under the `tests/_output` directory.
+You can see code coverage output under the `tests/Support/output` directory.
+
+## Documentation
+
+- [Internals](docs/internals.md)
+
+## Support the project
+
+[![Open Collective](https://img.shields.io/badge/Open%20Collective-sponsor-7eadf1?style=for-the-badge&logo=open%20collective&logoColor=7eadf1&labelColor=555555)](https://opencollective.com/yiisoft)
+
+## Follow updates
+
+[![Official website](https://img.shields.io/badge/Powered_by-Yii_Framework-green.svg?style=for-the-badge&logo=yii)](https://www.yiiframework.com/)
+[![Follow on X](https://img.shields.io/badge/-Follow%20on%20X-1DA1F2.svg?style=for-the-badge&logo=x&logoColor=white&labelColor=000000)](https://x.com/yiiframework)
+[![Telegram](https://img.shields.io/badge/telegram-join-1DA1F2?style=for-the-badge&logo=telegram)](https://t.me/yii_framework_in_english)
+[![Slack](https://img.shields.io/badge/slack-join-1DA1F2?style=for-the-badge&logo=slack)](https://yiiframework.com/go/slack)
+
+## License
+
+[![License](https://img.shields.io/badge/License-BSD--3--Clause-brightgreen.svg?style=for-the-badge&logo=opensourceinitiative&logoColor=white&labelColor=555555)](LICENSE.md)
