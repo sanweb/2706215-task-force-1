@@ -5,20 +5,29 @@ declare(strict_types=1);
 namespace app\tests\Unit\Models;
 
 use app\models\User;
+use app\tests\fixtures\UserFixture;
+use \Codeception\Test\Unit;
 
-final class UserTest extends \Codeception\Test\Unit
+final class UserTest extends Unit
 {
-    public function testFindUserById()
+    public function _fixtures(): array
+    {
+        return [
+            'users' => UserFixture::class,
+        ];
+    }
+
+    public function testFindUserById(): void
     {
         /** @var User $user */
         $user = User::findIdentity(100);
 
-        verify($user)->notEmpty();
-        verify($user->username)->equals('admin');
-        verify(User::findIdentity(999))->empty();
+        verify($user)->notNull();
+        verify($user->id)->equals(100);
+        verify(User::findIdentity(999))->null();
     }
 
-    public function testFindUserByAccessToken()
+    public function testFindUserByAccessToken(): void
     {
         /** @var User $user */
         $user = User::findIdentityByAccessToken('100-token');
@@ -28,23 +37,22 @@ final class UserTest extends \Codeception\Test\Unit
         verify(User::findIdentityByAccessToken('non-existing'))->empty();
     }
 
-    public function testFindUserByUsername()
+    public function testFindUserByEmail(): void
     {
-        /** @var User $user */
-        $user = User::findByUsername('admin');
+        $user = User::findByEmail('admin@example.com');
 
-        verify($user)->notEmpty();
-        verify(User::findByUsername('not-admin'))->empty();
+        verify($user)->notNull();
+        verify($user->email)->equals('admin@example.com');
+
+        verify(User::findByEmail('not-admin@example.com'))->null();
     }
 
-    /**
-     * @depends testFindUserByUsername
-     */
-    public function testValidateUser()
+    public function testValidateUser(): void
     {
         /** @var User $user */
-        $user = User::findByUsername('admin');
+        $user = User::findByEmail('admin@example.com');
 
+        //TODO: Add AuthKey support
         verify($user->validateAuthKey('test100key'))->notEmpty();
         verify($user->validateAuthKey('test102key'))->empty();
     }

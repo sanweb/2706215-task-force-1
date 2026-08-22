@@ -5,24 +5,33 @@ declare(strict_types=1);
 namespace app\tests\Unit\Models;
 
 use app\models\LoginForm;
+use app\tests\fixtures\UserFixture;
+use Codeception\Test\Unit;
 use Yii;
 use yii\base\Security;
 
-final class LoginFormTest extends \Codeception\Test\Unit
+final class LoginFormTest extends Unit
 {
     private $_model;
 
-    protected function _after()
+    public function _fixtures(): array
+    {
+        return [
+            'users' => UserFixture::class,
+        ];
+    }
+
+    protected function _after(): void
     {
         Yii::$app->user->logout();
     }
 
-    public function testLoginNoUser()
+    public function testLoginNoUser(): void
     {
         $this->_model = new LoginForm(
             new Security(),
             [
-                'username' => 'not_existing_username',
+                'email' => 'not-existing@example.com',
                 'password' => 'not_existing_password',
             ],
         );
@@ -31,12 +40,12 @@ final class LoginFormTest extends \Codeception\Test\Unit
         verify(Yii::$app->user->isGuest)->true();
     }
 
-    public function testLoginWrongPassword()
+    public function testLoginWrongPassword(): void
     {
         $this->_model = new LoginForm(
             new Security(),
             [
-                'username' => 'demo',
+                'email' => 'demo@example.com',
                 'password' => 'wrong_password',
             ],
         );
@@ -46,12 +55,12 @@ final class LoginFormTest extends \Codeception\Test\Unit
         verify($this->_model->errors)->arrayHasKey('password');
     }
 
-    public function testLoginCorrect()
+    public function testLoginCorrect(): void
     {
         $this->_model = new LoginForm(
             new Security(),
             [
-                'username' => 'demo',
+                'email' => 'demo@example.com',
                 'password' => 'demo',
             ],
         );
