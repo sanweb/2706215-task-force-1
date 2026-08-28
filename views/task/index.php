@@ -2,9 +2,14 @@
 
 declare(strict_types=1);
 
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
+use yii\helpers\Url;
+use yii\widgets\ActiveForm;
 
 /** @var \app\models\Task[] $tasks */
+/** @var \app\models\Category[] $categories */
+/** @var \app\requests\TaskFilterRequest $filterForm */
 ?>
 
 <div class="left-column">
@@ -55,41 +60,76 @@ use yii\helpers\Html;
 </div>
 <div class="right-column">
     <div class="right-card black">
-        <?php // TODO: Implement search
-        ?>
         <div class="search-form">
-            <form>
-                <h4 class="head-card">Категории</h4>
-                <div class="form-group">
-                    <div class="checkbox-wrapper">
-                        <label class="control-label" for="сourier-services">
-                            <input type="checkbox" id="сourier-services" checked>
-                            Курьерские услуги</label>
-                        <label class="control-label" for="cargo-transportation">
-                            <input id="cargo-transportation" type="checkbox">
-                            Грузоперевозки</label>
-                        <label class="control-label" for="translations">
-                            <input id="translations" type="checkbox">
-                            Переводы</label>
-                    </div>
+            <?php $form = ActiveForm::begin([
+                'method' => 'get',
+                'action' => ['task/index'],
+            ]); ?>
+
+            <h4 class="head-card">Категории</h4>
+
+            <div class="form-group">
+                <div class="checkbox-wrapper">
+                    <?= $form->field($filterForm, 'categories', [
+                        'template' => '{input}',
+                        'options' => ['tag' => false],
+                    ])->checkboxList(
+                        ArrayHelper::map($categories, 'id', 'name'),
+                        [
+                            'item' => function ($index, $label, $name, $checked, $value): string {
+                                $id = 'category-' . $value;
+
+                                return Html::label(
+                                    Html::checkbox(
+                                        $name,
+                                        $checked,
+                                        ['value' => $value, 'id' => $id,]
+                                    ) . ' ' . Html::encode($label),
+                                    $id,
+                                    ['class' => 'control-label']
+                                );
+                            },
+                        ]
+                    ) ?>
                 </div>
-                <h4 class="head-card">Дополнительно</h4>
-                <div class="form-group">
-                    <label class="control-label" for="without-performer">
-                        <input id="without-performer" type="checkbox" checked>
-                        Без исполнителя</label>
-                </div>
-                <h4 class="head-card">Период</h4>
-                <div class="form-group">
-                    <label for="period-value"></label>
-                    <select id="period-value">
-                        <option>1 час</option>
-                        <option>12 часов</option>
-                        <option>24 часа</option>
-                    </select>
-                </div>
-                <input type="submit" class="button button--blue" value="Искать">
-            </form>
+            </div>
+
+            <h4 class="head-card">Дополнительно</h4>
+
+            <?= $form->field($filterForm, 'isRemote', [
+                'template' => '{input}',
+                'options' => ['tag' => false],
+            ])->checkbox([
+                'label' => 'Удалённая работа',
+                'labelOptions' => ['class' => 'control-label'],
+            ]) ?>
+
+            <?= $form->field($filterForm, 'hasNoBid', [
+                'template' => '{input}',
+                'options' => ['tag' => false],
+            ])->checkbox([
+                'label' => 'Без откликов',
+                'labelOptions' => ['class' => 'control-label'],
+            ]) ?>
+
+            <h4 class="head-card">Период</h4>
+
+            <div class="form-group">
+                <?= $form->field($filterForm, 'period', [
+                    'template' => '{input}',
+                    'options' => ['tag' => false],
+                ])->dropDownList(
+                    $filterForm::PERIODS,
+                    [
+                        'prompt' => 'Выберите период',
+                        'id' => 'period-value',
+                    ]
+                ) ?>
+            </div>
+
+            <?= Html::submitButton('Искать', ['class' => 'button button--blue']) ?>
+
+            <?php $form->end(); ?>
         </div>
     </div>
 </div>
