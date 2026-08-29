@@ -22,6 +22,11 @@ class TaskFilterRequest extends Model
     public function rules(): array
     {
         return [
+            [
+                ['categories'],
+                'filter',
+                'filter' => static fn($value): array => $value === '' || $value === null ? [] : (array) $value,
+            ],
             [['categories'], 'each', 'rule' => ['integer']],
             [['isRemote', 'hasNoBid'], 'boolean'],
             [['period'], 'in', 'range' => array_keys(self::PERIODS)],
