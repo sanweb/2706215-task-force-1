@@ -63,6 +63,10 @@ $config = [
         'formatter' => [
             'locale' => 'ru-RU',
             'currencyCode' => 'RUB',
+            'numberFormatterOptions' => [
+                \NumberFormatter::MIN_FRACTION_DIGITS => 0,
+                \NumberFormatter::MAX_FRACTION_DIGITS => 0,
+            ],
         ],
     ],
     'params' => $params,
