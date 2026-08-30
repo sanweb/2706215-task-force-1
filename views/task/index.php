@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
-use yii\helpers\Url;
 use yii\widgets\ActiveForm;
+use yii\widgets\LinkPager;
 
 /** @var \app\models\Task[] $tasks */
 /** @var \app\models\Category[] $categories */
 /** @var \app\requests\TaskFilterRequest $filterForm */
+/** @var \yii\data\Pagination $pagination */
 ?>
 
 <div class="left-column">
@@ -36,27 +37,30 @@ use yii\widgets\ActiveForm;
             </div>
         </div>
     <?php endforeach; ?>
-    <?php // TODO: Implement pagination
-    ?>
-    <div class="pagination-wrapper">
-        <ul class="pagination-list">
-            <li class="pagination-item mark">
-                <a href="#" class="link link--page"></a>
-            </li>
-            <li class="pagination-item">
-                <a href="#" class="link link--page">1</a>
-            </li>
-            <li class="pagination-item pagination-item--active">
-                <a href="#" class="link link--page">2</a>
-            </li>
-            <li class="pagination-item">
-                <a href="#" class="link link--page">3</a>
-            </li>
-            <li class="pagination-item mark">
-                <a href="#" class="link link--page"></a>
-            </li>
-        </ul>
-    </div>
+
+    <?= LinkPager::widget([
+        'pagination' => $pagination,
+
+        'options' => [
+            'class' => 'pagination-list'
+        ],
+
+        'pageCssClass' => 'pagination-item',
+        'activePageCssClass' => 'pagination-item--active',
+
+        'prevPageCssClass' => 'pagination-item mark',
+        'nextPageCssClass' => 'pagination-item mark',
+
+        'linkOptions' => [
+            'class' => 'link link--page'
+        ],
+
+        'prevPageLabel' => '',
+        'nextPageLabel' => '',
+
+        'firstPageLabel' => false,
+        'lastPageLabel' => false,
+    ]) ?>
 </div>
 <div class="right-column">
     <div class="right-card black">
@@ -76,6 +80,7 @@ use yii\widgets\ActiveForm;
                     ])->checkboxList(
                         ArrayHelper::map($categories, 'id', 'name'),
                         [
+                            'tag' => false,
                             'item' => function ($index, $label, $name, $checked, $value): string {
                                 $id = 'category-' . $value;
 
@@ -96,21 +101,25 @@ use yii\widgets\ActiveForm;
 
             <h4 class="head-card">Дополнительно</h4>
 
-            <?= $form->field($filterForm, 'isRemote', [
-                'template' => '{input}',
-                'options' => ['tag' => false],
-            ])->checkbox([
-                'label' => 'Удалённая работа',
-                'labelOptions' => ['class' => 'control-label'],
-            ]) ?>
+            <div class="form-group">
+                <div class="checkbox-wrapper">
+                    <?= $form->field($filterForm, 'isRemote', [
+                        'template' => '{input}',
+                        'options' => ['tag' => false],
+                    ])->checkbox([
+                        'label' => 'Удалённая работа',
+                        'labelOptions' => ['class' => 'control-label'],
+                    ]) ?>
 
-            <?= $form->field($filterForm, 'hasNoBid', [
-                'template' => '{input}',
-                'options' => ['tag' => false],
-            ])->checkbox([
-                'label' => 'Без откликов',
-                'labelOptions' => ['class' => 'control-label'],
-            ]) ?>
+                    <?= $form->field($filterForm, 'hasNoBid', [
+                        'template' => '{input}',
+                        'options' => ['tag' => false],
+                    ])->checkbox([
+                        'label' => 'Без откликов',
+                        'labelOptions' => ['class' => 'control-label'],
+                    ]) ?>
+                </div>
+            </div>
 
             <h4 class="head-card">Период</h4>
 
@@ -127,7 +136,7 @@ use yii\widgets\ActiveForm;
                 ) ?>
             </div>
 
-            <?= Html::submitButton('Искать', ['class' => 'button button--blue']) ?>
+            <?= Html::submitInput('Искать', ['class' => 'button button--blue']) ?>
 
             <?php $form->end(); ?>
         </div>

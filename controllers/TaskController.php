@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace app\controllers;
 
+use app\dto\PaginationDto;
 use app\dto\TaskFilterDto;
 use app\repositories\CategoryRepositoryInterface;
 use app\repositories\TaskRepositoryInterface;
@@ -41,8 +42,16 @@ class TaskController extends Controller
             );
         }
 
+        $pagination = new PaginationDto(
+            page: max(1, (int) Yii::$app->request->get('page', 1)),
+            pageSize: (int) (Yii::$app->params['pagination']['tasksPageSize'] ?? PaginationDto::DEFAULT_PAGE_SIZE),
+        );
+
+        $result = $this->taskRepository->findNew($filter, $pagination);
+
         return $this->render('index', [
-            'tasks' => $this->taskRepository->findNew($filter),
+            'tasks' => $result->tasks,
+            'pagination' => $result->pagination,
             'categories' => $this->categoryRepository->findAll(),
             'filterForm' => $filterForm
         ]);

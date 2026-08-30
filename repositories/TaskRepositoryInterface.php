@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace app\repositories;
 
+use app\dto\PaginationDto;
 use app\dto\TaskFilterDto;
-use \app\models\Task;
+use app\dto\TaskSearchResultDto;
 
 interface TaskRepositoryInterface
 {
-    /** @return Task[] */
-    public function findNew(TaskFilterDto $filter): array;
+    public function findNew(TaskFilterDto $filter, PaginationDto $pagination): TaskSearchResultDto;
 }
