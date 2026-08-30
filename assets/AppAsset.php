@@ -26,16 +26,16 @@ class AppAsset extends AssetBundle
     public $basePath = '@webroot';
     public $baseUrl = '@web';
     public $css = [
-        'css/site.css',
+        'css/style.css',
     ];
     public $js = [
-        'js/color-mode.js',
+        //'js/color-mode.js',
     ];
     public $jsOptions = [
         'position' => View::POS_HEAD,
     ];
     public $depends = [
-        YiiAsset::class,
-        BootstrapAsset::class,
+        //YiiAsset::class,
+        //BootstrapAsset::class,
     ];
 }

@@ -20,7 +20,7 @@ $this->render('_head');
     <!-- <title>Taskforce</title> -->
     <?php $this->head() ?>
     <title><?= Html::encode($this->title) ?></title>
-    <link rel="stylesheet" href="css/style.css">
+    <!--<link rel="stylesheet" href="css/style.css">-->
 </head>
 <body>
 <?php $this->beginBody() ?>
