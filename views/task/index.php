@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
+use yii\helpers\Url;
 use yii\widgets\ActiveForm;
 use yii\widgets\LinkPager;
 
@@ -18,7 +19,7 @@ use yii\widgets\LinkPager;
     <?php foreach ($tasks as $task): ?>
         <div class="task-card">
             <div class="header-task">
-                <a href="#" class="link link--block link--big"><?= Html::encode($task->title) ?></a>
+                <a href="<?= Url::to(['task/view', 'id' => $task->id]) ?>" class="link link--block link--big"><?= Html::encode($task->title) ?></a>
                 <p class="price price--task"><?= Yii::$app->formatter->asCurrency($task->budget) ?></p>
             </div>
             <p class="info-text"><span class="current-time"><?= Yii::$app->formatter->asRelativeTime($task->created_at) ?></span><!--назад?--></p>

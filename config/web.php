@@ -58,6 +58,7 @@ $config = [
             'showScriptName' => false,
             'rules' => [
                 'tasks' => 'task/index',
+                'task/view/<id:\d+>' => 'task/view',
             ],
         ],
         'formatter' => [

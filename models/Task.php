@@ -166,4 +166,9 @@ class Task extends ActiveRecord
             ['id' => 'user_id']
         )->viaTable('bid', ['task_id' => 'id']);
     }
+
+    public function getStatusLabel(): string
+    {
+        return TaskStatus::from($this->status)->label();
+    }
 }
