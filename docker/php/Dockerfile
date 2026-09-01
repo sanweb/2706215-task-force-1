@@ -8,7 +8,8 @@ LABEL Name="taskforce-yii2-php" \
 RUN apk add --no-cache \
         icu-dev \
         icu-data-full \
-    && docker-php-ext-install pdo_mysql intl
+    && docker-php-ext-install pdo_mysql intl \
+    && rm -rf /var/cache/apk/*
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
