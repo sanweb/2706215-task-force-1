@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @var float $value */
 /** @var string $size */
 /** @var int $maxStars */

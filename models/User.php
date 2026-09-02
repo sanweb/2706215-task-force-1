@@ -246,6 +246,9 @@ class User extends ActiveRecord implements IdentityInterface
         )->viaTable('bid', ['user_id' => 'id']);
     }
 
+    /**
+     * @throws \DateMalformedStringException
+     */
     public function getAge(): ?int
     {
         if ($this->birthday === null) {

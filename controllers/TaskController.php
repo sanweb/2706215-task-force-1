@@ -58,12 +58,15 @@ class TaskController extends Controller
         ]);
     }
 
+    /**
+     * @throws NotFoundHttpException
+     */
     public function actionView(int $id): string
     {
         $task = $this->taskRepository->findById($id);
 
         if ($task === null) {
-            throw new NotFoundHttpException('Задание не найдено');
+            throw new NotFoundHttpException('Задание не найдено.');
         }
 
         return $this->render('view', [

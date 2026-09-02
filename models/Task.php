@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace app\models;
 
 use Sanweb\Taskforce\enum\TaskStatus;
+use Sanweb\Taskforce\exception\MissingEnumLabelException;
 use yii\base\InvalidConfigException;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
@@ -167,6 +168,9 @@ class Task extends ActiveRecord
         )->viaTable('bid', ['task_id' => 'id']);
     }
 
+    /**
+     * @throws MissingEnumLabelException
+     */
     public function getStatusLabel(): string
     {
         return TaskStatus::from($this->status)->label();

@@ -9,6 +9,9 @@ use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 
+/**
+ * @property mixed $taskRepository
+ */
 class UserController extends Controller
 {
     public function __construct(
