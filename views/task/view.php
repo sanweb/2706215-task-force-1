@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use app\widgets\RatingWidget;
 use yii\helpers\Html;
 use yii\helpers\Url;
 
@@ -16,10 +17,8 @@ use yii\helpers\Url;
     <p class="task-description"><?= Html::encode($task->description) ?></p>
     <!-- TODO: Implement action buttons and map -->
     <a href="#" class="button button--blue action-btn" data-action="act_response">Откликнуться на задание</a>
-    <!--
     <a href="#" class="button button--orange action-btn" data-action="refusal">Отказаться от задания</a>
     <a href="#" class="button button--pink action-btn" data-action="completion">Завершить задание</a>
-    -->
     <div class="task-map">
         <img class="map" src="/img/map.png" width="725" height="346" alt="Новый арбат, 23, к. 1">
         <p class="map-address town">Москва</p>
@@ -34,16 +33,22 @@ use yii\helpers\Url;
             <div class="feedback-wrapper">
                 <a href="<?= Url::to(['user/view', 'id' => $bid->user_id]) ?>" class="link link--block link--big"><?= Html::encode($bid->user->name) ?></a>
                 <div class="response-wrapper">
-                    <!-- TODO: Implement dynamic reviews -->
-                    <div class="stars-rating small">
-                        <span class="fill-star">&nbsp;</span><span class="fill-star">&nbsp;</span><span class="fill-star">&nbsp;</span><span class="fill-star">&nbsp;</span><span>&nbsp;</span>
-                    </div>
-                    <p class="reviews"><?= count($bid->user->receivedReviews) ?>  отзывов<!--отзыва--></p>
+                    <?= RatingWidget::widget([
+                        'value' => $bid->user->rating,
+                        'size' => RatingWidget::SIZE_SMALL,
+                    ]) ?>
+                    <p class="reviews">
+                        <?= Yii::t(
+                            'app',
+                            '{n, plural, one{# отзыв} few{# отзыва} many{# отзывов} other{# отзывов}}',
+                            ['n' => count($bid->user->receivedReviews)],
+                        ) ?>
+                    </p>
                 </div>
                 <p class="response-message"><?= Html::encode($bid->comment) ?></p>
             </div>
             <div class="feedback-wrapper">
-                <p class="info-text"><span class="current-time"><?= Yii::$app->formatter->asRelativeTime($bid->created_at) ?></span><!--назад?--></p>
+                <p class="info-text"><span class="current-time"><?= Yii::$app->formatter->asRelativeTime($bid->created_at) ?></span></p>
                 <p class="price price--small"><?= Yii::$app->formatter->asCurrency($bid->price) ?></p>
             </div>
             <div class="button-popup">
@@ -63,7 +68,6 @@ use yii\helpers\Url;
             <dt>Дата публикации</dt>
             <dd><?= Yii::$app->formatter->asRelativeTime($task->created_at) ?></dd>
             <dt>Срок выполнения</dt>
-            <!-- ? Expiration date has no time component. -->
             <dd><?= Yii::$app->formatter->asDatetime($task->expire_date, 'd MMMM, HH:mm') ?></dd>
             <dt>Статус</dt>
             <dd><?= Html::encode($task->statusLabel) ?></dd>

@@ -12,6 +12,7 @@ $config = [
         'definitions' => [
             \app\repositories\TaskRepositoryInterface::class => \app\repositories\TaskRepository::class,
             \app\repositories\CategoryRepositoryInterface::class => \app\repositories\CategoryRepository::class,
+            \app\repositories\UserRepositoryInterface::class => \app\repositories\UserRepository::class,
         ],
         'singletons' => [
             \yii\mail\MailerInterface::class => [
@@ -59,6 +60,7 @@ $config = [
             'rules' => [
                 'tasks' => 'task/index',
                 'task/view/<id:\d+>' => 'task/view',
+                'user/view/<id:\d+>' => 'user/view',
             ],
         ],
         'formatter' => [

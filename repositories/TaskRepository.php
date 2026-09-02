@@ -52,4 +52,22 @@ final class TaskRepository implements TaskRepositoryInterface
             pagination: $pagination,
         );
     }
+
+    #[Override]
+    public function findById(int $id): ?Task
+    {
+        return Task::findOne($id);
+    }
+
+    #[Override]
+    public function hasActiveTaskWithExecutor(int $customerId, int $executorId): bool
+    {
+        return Task::find()
+            ->where([
+                'customer_id' => $customerId,
+                'executor_id' => $executorId,
+                'status' => TaskStatus::InProgress->value,
+            ])
+            ->exists();
+    }
 }

@@ -6,7 +6,6 @@ namespace app\controllers;
 
 use app\dto\PaginationDto;
 use app\dto\TaskFilterDto;
-use app\models\Task;
 use app\repositories\CategoryRepositoryInterface;
 use app\repositories\TaskRepositoryInterface;
 use app\requests\TaskFilterRequest;
@@ -17,11 +16,11 @@ use yii\web\NotFoundHttpException;
 class TaskController extends Controller
 {
     public function __construct(
-        $id,
-        $module,
+        mixed $id,
+        mixed $module,
         private readonly TaskRepositoryInterface $taskRepository,
         private readonly CategoryRepositoryInterface $categoryRepository,
-        $config = []
+        array $config = []
     ) {
         parent::__construct($id, $module, $config);
     }
@@ -59,11 +58,11 @@ class TaskController extends Controller
         ]);
     }
 
-    public function actionView($id): string
+    public function actionView(int $id): string
     {
-        $task = Task::findOne($id);
+        $task = $this->taskRepository->findById($id);
 
-        if (!$task) {
+        if ($task === null) {
             throw new NotFoundHttpException('Задание не найдено');
         }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace app\models;
 
+use DateTimeImmutable;
 use yii\base\InvalidConfigException;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
@@ -27,6 +28,7 @@ use yii\web\IdentityInterface;
  * @property City|null $city
  * @property ExecutorProfile|null $executorProfile
  * @property ExecutorSpecialization[] $executorSpecializations
+ * @property ExecutorStatsView|null $executorStats
  * @property Review[] $sentReviews
  * @property Review[] $receivedReviews
  * @property Task[] $customerTasks
@@ -192,6 +194,14 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     /**
+     * Gets the executor statistics.
+     */
+    public function getExecutorStats(): ActiveQuery
+    {
+        return $this->hasOne(ExecutorStatsView::class, ['executor_id' => 'id']);
+    }
+
+    /**
      * Gets reviews sent by this user.
      */
     public function getSentReviews(): ActiveQuery
@@ -234,5 +244,14 @@ class User extends ActiveRecord implements IdentityInterface
             Task::class,
             ['id' => 'task_id']
         )->viaTable('bid', ['user_id' => 'id']);
+    }
+
+    public function getAge(): ?int
+    {
+        if ($this->birthday === null) {
+            return null;
+        }
+
+        return (new DateTimeImmutable($this->birthday))->diff(new DateTimeImmutable())->y;
     }
 }

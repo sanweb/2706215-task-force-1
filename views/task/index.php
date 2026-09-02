@@ -22,7 +22,7 @@ use yii\widgets\LinkPager;
                 <a href="<?= Url::to(['task/view', 'id' => $task->id]) ?>" class="link link--block link--big"><?= Html::encode($task->title) ?></a>
                 <p class="price price--task"><?= Yii::$app->formatter->asCurrency($task->budget) ?></p>
             </div>
-            <p class="info-text"><span class="current-time"><?= Yii::$app->formatter->asRelativeTime($task->created_at) ?></span><!--назад?--></p>
+            <p class="info-text"><span class="current-time"><?= Yii::$app->formatter->asRelativeTime($task->created_at) ?></span></p>
             <p class="task-text"><?= Html::encode($task->description) ?></p>
             <div class="footer-task">
                 <?php if ($task->city): ?>
@@ -34,7 +34,7 @@ use yii\widgets\LinkPager;
                 <?php if ($task->category): ?>
                     <p class="info-text category-text"><?= Html::encode($task->category->name) ?></p>
                 <?php endif; ?>
-                <a href="#" class="button button--black">Смотреть Задание</a>
+                <a href="<?= Url::to(['task/view', 'id' => $task->id]) ?>" class="button button--black">Смотреть Задание</a>
             </div>
         </div>
     <?php endforeach; ?>
