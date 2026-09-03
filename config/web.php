@@ -9,6 +9,11 @@ $config = [
     'language' => 'ru-RU',
     'bootstrap' => ['log'],
     'container' => [
+        'definitions' => [
+            \app\repositories\TaskRepositoryInterface::class => \app\repositories\TaskRepository::class,
+            \app\repositories\CategoryRepositoryInterface::class => \app\repositories\CategoryRepository::class,
+            \app\repositories\UserRepositoryInterface::class => \app\repositories\UserRepository::class,
+        ],
         'singletons' => [
             \yii\mail\MailerInterface::class => [
                 'class' => \yii\symfonymailer\Mailer::class,
@@ -54,11 +59,17 @@ $config = [
             'showScriptName' => false,
             'rules' => [
                 'tasks' => 'task/index',
+                'task/view/<id:\d+>' => 'task/view',
+                'user/view/<id:\d+>' => 'user/view',
             ],
         ],
         'formatter' => [
             'locale' => 'ru-RU',
             'currencyCode' => 'RUB',
+            'numberFormatterOptions' => [
+                \NumberFormatter::MIN_FRACTION_DIGITS => 0,
+                \NumberFormatter::MAX_FRACTION_DIGITS => 0,
+            ],
         ],
     ],
     'params' => $params,

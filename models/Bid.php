@@ -15,6 +15,7 @@ use yii\db\ActiveRecord;
  * @property int $user_id
  * @property int $task_id
  * @property int $price
+ * @property string|null $comment
  * @property string $status
  * @property string $created_at
  * @property string|null $updated_at
@@ -44,6 +45,7 @@ class Bid extends ActiveRecord
             [['user_id', 'task_id', 'price'], 'required'],
             [['user_id', 'task_id'], 'integer'],
             [['price'], 'integer', 'min' => 1],
+            [['comment'], 'string', 'max' => 1000],
 
             [['user_id', 'task_id'], 'unique', 'targetAttribute' => ['user_id', 'task_id']],
 

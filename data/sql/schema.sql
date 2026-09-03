@@ -166,6 +166,7 @@ CREATE TABLE IF NOT EXISTS `bid` (
     `task_id`   BIGINT UNSIGNED NOT NULL,
 
     `price`     BIGINT UNSIGNED NOT NULL,
+    `comment`   TEXT            NULL,
 
     `status`    VARCHAR(16) NOT NULL DEFAULT 'new',
 
