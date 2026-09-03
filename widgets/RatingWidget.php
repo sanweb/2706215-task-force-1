@@ -20,7 +20,7 @@ final class RatingWidget extends Widget
     public function run(): string
     {
         return $this->render('rating', [
-            'value' => $this->value,
+            'filledStars' => (int) floor($this->value),
             'size' => $this->size,
             'maxStars' => self::MAX_STARS,
         ]);
