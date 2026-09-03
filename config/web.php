@@ -64,6 +64,7 @@ $config = [
             ],
         ],
         'formatter' => [
+            'class' => \app\components\AppFormatter::class,
             'locale' => 'ru-RU',
             'currencyCode' => 'RUB',
             'numberFormatterOptions' => [

@@ -98,7 +98,7 @@ use yii\helpers\Html;
             <dt>Всего заказов</dt>
             <dd><?= $user->executorStats?->completed_tasks ?? 0 ?> выполнено, <?= $user->executorStats?->failed_tasks ?? 0 ?> провалено</dd>
             <dt>Место в рейтинге</dt>
-            <dd><?= $user->executorStats?->rating_position ?></dd>
+            <dd><?= $user->executorStats?->rating_position ?> место</dd>
             <dt>Дата регистрации</dt>
             <dd><?= Yii::$app->formatter->asDatetime($user->created_at, 'd MMMM, HH:mm') ?></dd>
             <dt>Статус</dt>
@@ -115,7 +115,7 @@ use yii\helpers\Html;
                         <a
                             href="tel:<?= Html::encode($user->executorProfile->phone) ?>"
                             class="link link--block link--phone">
-                            <?= Html::encode($user->executorProfile->phone) ?>
+                            <?= Html::encode(Yii::$app->formatter->asPhone($user->executorProfile->phone)) ?>
                         </a>
                     </li>
                 <?php endif; ?>
