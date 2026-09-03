@@ -16,10 +16,10 @@ use yii\helpers\Html;
             <img class="card-photo" src="<?= $user->avatar ?? '/img/avatars/default.png' ?>" width="191" height="190" alt="Фото пользователя">
             <div class="card-rate">
                 <?= RatingWidget::widget([
-                    'value' => $user->executorStats->avg_score ?? 0.0,
+                    'value' => $user->executorStats->avg_score ?? 0,
                     'size' => RatingWidget::SIZE_BIG,
                 ]) ?>
-                <span class="current-rate"><?= $user->executorStats->avg_score ?? 0.0 ?></span>
+                <span class="current-rate"><?= $user->executorStats->avg_score ?? 0  ?></span>
             </div>
         </div>
         <p class="user-description"><?= Html::encode($user->executorProfile->about ?? '') ?></p>
@@ -102,7 +102,7 @@ use yii\helpers\Html;
             <dt>Дата регистрации</dt>
             <dd><?= Yii::$app->formatter->asDatetime($user->created_at, 'd MMMM, HH:mm') ?></dd>
             <dt>Статус</dt>
-            <dd>Открыт для новых заказов</dd>
+            <dd><?= Html::encode($user->executorProfile->statusLabel) ?></dd>
         </dl>
     </div>
     <div class="right-card white">

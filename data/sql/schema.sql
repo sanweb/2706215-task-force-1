@@ -42,18 +42,23 @@ CREATE TABLE IF NOT EXISTS `user` (
 
 -- Executor profile; exists only for users with `is_executor = TRUE`
 CREATE TABLE IF NOT EXISTS `executor_profile` (
-    `id`            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `user_id`       BIGINT UNSIGNED NOT NULL,
+    `id`                BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `user_id`           BIGINT UNSIGNED NOT NULL,
 
-    `phone`         VARCHAR(20)     NULL,
-    `telegram`      VARCHAR(64)     NULL, -- username without @
-    `about`         TEXT            NULL,
+    `phone`             VARCHAR(20)     NULL,
+    `telegram`          VARCHAR(64)     NULL, -- username without @
+    `about`             TEXT            NULL,
 
     -- hide contacts from everyone except the task customer
-    `hide_my_contacts` BOOLEAN      NOT NULL DEFAULT FALSE,
+    `hide_my_contacts`  BOOLEAN         NOT NULL DEFAULT FALSE,
 
-    `created_at`    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`    TIMESTAMP       NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    `status`            VARCHAR(32)     NOT NULL DEFAULT 'available',
+
+    `created_at`        TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        TIMESTAMP       NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT `chk_executor_profile_status`
+        CHECK (`status` IN ('available', 'busy', 'unavailable')),
 
     UNIQUE INDEX `uq_executor_profile_user` (`user_id`),
 
