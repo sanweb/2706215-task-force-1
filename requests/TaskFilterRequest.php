@@ -14,9 +14,9 @@ class TaskFilterRequest extends Model
         '-24 hours' => 'За сутки',
     ];
 
-    public $categories = [];
-    public $isRemote = false;
-    public $hasNoBid = false;
+    public array|string $categories = [];
+    public string|int|bool $isRemote = false;
+    public string|int|bool $hasNoBid = false;
     public string $period = '';
 
     public function rules(): array
@@ -30,6 +30,16 @@ class TaskFilterRequest extends Model
             [['categories'], 'each', 'rule' => ['integer']],
             [['isRemote', 'hasNoBid'], 'boolean'],
             [['period'], 'in', 'range' => array_keys(self::PERIODS)],
+        ];
+    }
+
+    public function attributeLabels(): array
+    {
+        return [
+            'categories' => 'Категории',
+            'isRemote' => 'Удалённая работа',
+            'hasNoBid' => 'Без откликов',
+            'period' => 'Период',
         ];
     }
 

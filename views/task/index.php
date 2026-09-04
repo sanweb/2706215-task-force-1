@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use app\widgets\AppLinkPager;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\widgets\ActiveForm;
-use yii\widgets\LinkPager;
 
 /** @var \app\models\Task[] $tasks */
 /** @var \app\models\Category[] $categories */
@@ -16,52 +16,40 @@ use yii\widgets\LinkPager;
 
 <div class="left-column">
     <h3 class="head-main head-task">Новые задания</h3>
-    <?php foreach ($tasks as $task): ?>
-        <div class="task-card">
-            <div class="header-task">
-                <a href="<?= Url::to(['task/view', 'id' => $task->id]) ?>" class="link link--block link--big"><?= Html::encode($task->title) ?></a>
-                <p class="price price--task"><?= Yii::$app->formatter->asCurrency($task->budget) ?></p>
+
+    <?php if ($tasks !== []): ?>
+        <?php foreach ($tasks as $task): ?>
+            <div class="task-card">
+                <div class="header-task">
+                    <a href="<?= Url::to(['task/view', 'id' => $task->id]) ?>" class="link link--block link--big"><?= Html::encode($task->title) ?></a>
+                    <p class="price price--task"><?= Yii::$app->formatter->asCurrency($task->budget) ?></p>
+                </div>
+                <p class="info-text"><span class="current-time"><?= Yii::$app->formatter->asRelativeTime($task->created_at) ?></span></p>
+                <p class="task-text"><?= Html::encode($task->description) ?></p>
+                <div class="footer-task">
+                    <?php if ($task->city): ?>
+                        <p class="info-text town-text">
+                            <?= Html::encode($task->city->name) ?>
+                            <?= Html::encode($task->location) ?>
+                        </p>
+                    <?php endif; ?>
+                    <?php if ($task->category): ?>
+                        <p class="info-text category-text"><?= Html::encode($task->category->name) ?></p>
+                    <?php endif; ?>
+                    <a href="<?= Url::to(['task/view', 'id' => $task->id]) ?>" class="button button--black">Смотреть Задание</a>
+                </div>
             </div>
-            <p class="info-text"><span class="current-time"><?= Yii::$app->formatter->asRelativeTime($task->created_at) ?></span></p>
-            <p class="task-text"><?= Html::encode($task->description) ?></p>
-            <div class="footer-task">
-                <?php if ($task->city): ?>
-                    <p class="info-text town-text">
-                        <?= Html::encode($task->city->name) ?>
-                        <?= Html::encode($task->location) ?>
-                    </p>
-                <?php endif; ?>
-                <?php if ($task->category): ?>
-                    <p class="info-text category-text"><?= Html::encode($task->category->name) ?></p>
-                <?php endif; ?>
-                <a href="<?= Url::to(['task/view', 'id' => $task->id]) ?>" class="button button--black">Смотреть Задание</a>
-            </div>
-        </div>
-    <?php endforeach; ?>
+        <?php endforeach; ?>
 
-    <?= LinkPager::widget([
-        'pagination' => $pagination,
+        <?php if ($pagination->pageCount > 1): ?>
+            <?= AppLinkPager::widget([
+                'pagination' => $pagination,
+            ]) ?>
+        <?php endif; ?>
 
-        'options' => [
-            'class' => 'pagination-list'
-        ],
-
-        'pageCssClass' => 'pagination-item',
-        'activePageCssClass' => 'pagination-item--active',
-
-        'prevPageCssClass' => 'pagination-item mark',
-        'nextPageCssClass' => 'pagination-item mark',
-
-        'linkOptions' => [
-            'class' => 'link link--page'
-        ],
-
-        'prevPageLabel' => '',
-        'nextPageLabel' => '',
-
-        'firstPageLabel' => false,
-        'lastPageLabel' => false,
-    ]) ?>
+    <?php else: ?>
+        <p class="info-text">Заданий по выбранным условиям не найдено.</p>
+    <?php endif; ?>
 </div>
 <div class="right-column">
     <div class="right-card black">
@@ -139,7 +127,7 @@ use yii\widgets\LinkPager;
 
             <?= Html::submitInput('Искать', ['class' => 'button button--blue']) ?>
 
-            <?php $form->end(); ?>
+            <?php ActiveForm::end(); ?>
         </div>
     </div>
 </div>
