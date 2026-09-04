@@ -10,8 +10,9 @@ $config = [
     'bootstrap' => ['log'],
     'container' => [
         'definitions' => [
-            \app\repositories\TaskRepositoryInterface::class => \app\repositories\TaskRepository::class,
             \app\repositories\CategoryRepositoryInterface::class => \app\repositories\CategoryRepository::class,
+            \app\repositories\CityRepositoryInterface::class => \app\repositories\CityRepository::class,
+            \app\repositories\TaskRepositoryInterface::class => \app\repositories\TaskRepository::class,
             \app\repositories\UserRepositoryInterface::class => \app\repositories\UserRepository::class,
         ],
         'singletons' => [
@@ -61,6 +62,7 @@ $config = [
                 'tasks' => 'task/index',
                 'task/view/<id:\d+>' => 'task/view',
                 'user/view/<id:\d+>' => 'user/view',
+                'signup' => 'user/signup',
             ],
         ],
         'formatter' => [

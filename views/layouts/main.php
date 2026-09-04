@@ -22,8 +22,7 @@ $this->render('_head');
 <?php $this->beginBody() ?>
 
 <?= $this->render('_header') ?>
-
-<main class="main-content container">
+<main class="container <?= Html::encode($this->params['mainClass'] ?? 'main-content') ?>">
     <?php if (!empty($this->params['breadcrumbs'])): ?>
         <?= Breadcrumbs::widget(['links' => $this->params['breadcrumbs']]) ?>
     <?php endif ?>
