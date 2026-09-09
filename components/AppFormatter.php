@@ -8,16 +8,29 @@ use yii\i18n\Formatter;
 
 final class AppFormatter extends Formatter
 {
+    /**
+     * Formats a Russian phone number in the form "+7 (XXX) XXX-XX-XX".
+     *
+     * Returns the original value if it cannot be formatted.
+     */
     public function asPhone(?string $value): string
     {
-        if ($value === null || $value === '') {
+        if (empty($value)) {
             return '';
         }
 
-        if (!preg_match('/^\+7(\d{3})(\d{3})(\d{2})(\d{2})$/', $value, $matches)) {
+        $digits = preg_replace('/\D/', '', $value);
+
+        if (!preg_match('/^7(\d{3})(\d{3})(\d{2})(\d{2})$/', $digits, $matches)) {
             return $value;
         }
 
-        return "+7 ({$matches[1]}) {$matches[2]}-{$matches[3]}-{$matches[4]}";
+        return sprintf(
+            '+7 (%s) %s-%s-%s',
+            $matches[1],
+            $matches[2],
+            $matches[3],
+            $matches[4],
+        );
     }
 }
