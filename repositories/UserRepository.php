@@ -31,7 +31,8 @@ final class UserRepository
                 'categories',
                 'executorProfile',
                 'executorStats',
-                'receivedReviews',
+                'receivedReviews.customer',
+                'receivedReviews.task',
             ])
             ->one();
     }

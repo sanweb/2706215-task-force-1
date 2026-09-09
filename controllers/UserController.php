@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace app\controllers;
 
 use app\repositories\CityRepository;
+use app\repositories\TaskRepository;
 use app\repositories\UserRepository;
 use app\requests\UserSignupRequest;
 use app\services\UserService;
@@ -14,9 +15,6 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
-/**
- * @property mixed $taskRepository
- */
 class UserController extends Controller
 {
     /**
@@ -28,6 +26,7 @@ class UserController extends Controller
         private readonly UserRepository $userRepository,
         private readonly CityRepository $cityRepository,
         private readonly UserService $userService,
+        private readonly TaskRepository $taskRepository,
         array $config = []
     ) {
         parent::__construct($id, $module, $config);
@@ -40,7 +39,7 @@ class UserController extends Controller
      */
     public function actionView(int $id): string
     {
-        $user = $this->userRepository->findById($id);
+        $user = $this->userRepository->findExecutorById($id);
 
         if ($user === null) {
             throw new NotFoundHttpException('Исполнитель не найден.');

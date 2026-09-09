@@ -63,6 +63,21 @@ final class TaskRepository
     }
 
     /**
+     * Finds a task with the data required by the task details page.
+     */
+    public function findDetailsById(int $id): ?Task
+    {
+        return Task::find()
+            ->where(['task.id' => $id])
+            ->with([
+                'category',
+                'bids.user.executorStats',
+                'bids.user.receivedReviews',
+            ])
+            ->one();
+    }
+
+    /**
      * Checks for an active task assigned to the executor by the customer.
      */
     public function hasActiveTaskWithExecutor(int $customerId, int $executorId): bool
