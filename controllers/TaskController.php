@@ -6,8 +6,8 @@ namespace app\controllers;
 
 use app\dto\PaginationDto;
 use app\dto\TaskFilterDto;
-use app\repositories\CategoryRepositoryInterface;
-use app\repositories\TaskRepositoryInterface;
+use app\repositories\CategoryRepository;
+use app\repositories\TaskRepository;
 use app\requests\TaskFilterRequest;
 use Yii;
 use yii\web\Controller;
@@ -18,8 +18,8 @@ class TaskController extends Controller
     public function __construct(
         mixed $id,
         mixed $module,
-        private readonly TaskRepositoryInterface $taskRepository,
-        private readonly CategoryRepositoryInterface $categoryRepository,
+        private readonly TaskRepository $taskRepository,
+        private readonly CategoryRepository $categoryRepository,
         array $config = []
     ) {
         parent::__construct($id, $module, $config);

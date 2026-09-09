@@ -6,8 +6,8 @@ namespace app\controllers;
 
 use app\dto\UserSignupDto;
 use app\models\City;
-use app\repositories\CityRepositoryInterface;
-use app\repositories\UserRepositoryInterface;
+use app\repositories\CityRepository;
+use app\repositories\UserRepository;
 use app\requests\UserSignupRequest;
 use app\services\UserService;
 use Yii;
@@ -22,8 +22,8 @@ class UserController extends Controller
     public function __construct(
         mixed $id,
         mixed $module,
-        private readonly UserRepositoryInterface $userRepository,
-        private readonly CityRepositoryInterface $cityRepository,
+        private readonly UserRepository $userRepository,
+        private readonly CityRepository $cityRepository,
         private readonly UserService $userService,
         array $config = []
     ) {

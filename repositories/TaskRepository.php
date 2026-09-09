@@ -8,13 +8,14 @@ use app\dto\PaginationDto;
 use app\dto\TaskFilterDto;
 use app\dto\TaskSearchResultDto;
 use app\models\Task;
-use Override;
 use Sanweb\Taskforce\enum\TaskStatus;
 use yii\data\Pagination;
 
-final class TaskRepository implements TaskRepositoryInterface
+final class TaskRepository
 {
-    #[Override]
+    /**
+     * Finds new tasks matching the filter with pagination.
+     */
     public function findNew(TaskFilterDto $filter, PaginationDto $pagination): TaskSearchResultDto
     {
         $query = Task::find()
@@ -53,13 +54,17 @@ final class TaskRepository implements TaskRepositoryInterface
         );
     }
 
-    #[Override]
+    /**
+     * Finds a task by ID.
+     */
     public function findById(int $id): ?Task
     {
         return Task::findOne($id);
     }
 
-    #[Override]
+    /**
+     * Checks for an active task assigned to the executor by the customer.
+     */
     public function hasActiveTaskWithExecutor(int $customerId, int $executorId): bool
     {
         return Task::find()

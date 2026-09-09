@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace app\repositories;
 
 use app\models\City;
-use Override;
 
-final class CityRepository implements CityRepositoryInterface
+final class CityRepository
 {
-    #[Override]
+    /**
+     * Returns cities as an ID-to-name map sorted by name.
+     *
+     * @return array<int, string>
+     */
     public function findAllForSelect(): array
     {
         return City::find()

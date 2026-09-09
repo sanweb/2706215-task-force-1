@@ -9,12 +9,6 @@ $config = [
     'language' => 'ru-RU',
     'bootstrap' => ['log'],
     'container' => [
-        'definitions' => [
-            \app\repositories\CategoryRepositoryInterface::class => \app\repositories\CategoryRepository::class,
-            \app\repositories\CityRepositoryInterface::class => \app\repositories\CityRepository::class,
-            \app\repositories\TaskRepositoryInterface::class => \app\repositories\TaskRepository::class,
-            \app\repositories\UserRepositoryInterface::class => \app\repositories\UserRepository::class,
-        ],
         'singletons' => [
             \yii\mail\MailerInterface::class => [
                 'class' => \yii\symfonymailer\Mailer::class,
