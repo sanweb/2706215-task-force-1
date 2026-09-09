@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace app\requests;
 
+use app\dto\TaskFilterDto;
 use yii\base\Model;
 
 class TaskFilterRequest extends Model
@@ -46,5 +47,17 @@ class TaskFilterRequest extends Model
     public function formName(): string
     {
         return 'filters';
+    }
+
+    public function toDto(): TaskFilterDto
+    {
+        return new TaskFilterDto(
+            categories: $this->categories,
+            isRemote: (bool) $this->isRemote,
+            hasNoBid: (bool) $this->hasNoBid,
+            createdAfter: $this->period !== ''
+                ? (strtotime($this->period) ?: null)
+                : null,
+        );
     }
 }

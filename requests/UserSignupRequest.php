@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace app\requests;
 
+use app\dto\UserSignupDto;
 use app\models\City;
 use app\models\User;
 use yii\base\Model;
@@ -70,5 +71,16 @@ class UserSignupRequest extends Model
     public function formName(): string
     {
         return 'signup';
+    }
+
+    public function toDto(): UserSignupDto
+    {
+        return new UserSignupDto(
+            name: $this->name,
+            email: $this->email,
+            cityId: (int) $this->cityId,
+            password: $this->password,
+            isExecutor: (bool) $this->isExecutor,
+        );
     }
 }

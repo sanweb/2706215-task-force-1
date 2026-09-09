@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace app\controllers;
 
-use app\dto\UserSignupDto;
 use app\models\City;
 use app\repositories\CityRepository;
 use app\repositories\UserRepository;
@@ -62,24 +61,12 @@ class UserController extends Controller
     {
         $signupForm = new UserSignupRequest();
 
-        if ($this->request->isPost) {
-            $signupForm->load($this->request->post());
+        if ($signupForm->load($this->request->post()) && $signupForm->validate()) {
+            $user = $this->userService->signup($signupForm->toDto());
 
-            if ($signupForm->validate()) {
-                $signupDto = new UserSignupDto(
-                    name: $signupForm->name,
-                    email: $signupForm->email,
-                    cityId: (int) $signupForm->cityId,
-                    password: $signupForm->password,
-                    isExecutor: (bool) $signupForm->isExecutor,
-                );
+            Yii::$app->user->login($user);
 
-                $user = $this->userService->signup($signupDto);
-
-                Yii::$app->user->login($user);
-
-                return $this->goHome();
-            }
+            return $this->goHome();
         }
 
         return $this->render('signup', [

@@ -33,14 +33,7 @@ class TaskController extends Controller
         $filter = new TaskFilterDto();
 
         if ($filterForm->validate()) {
-            $filter = new TaskFilterDto(
-                categories: $filterForm->categories,
-                isRemote: (bool) $filterForm->isRemote,
-                hasNoBid: (bool) $filterForm->hasNoBid,
-                createdAfter: $filterForm->period !== ''
-                    ? (strtotime($filterForm->period) ?: null)
-                    : null,
-            );
+            $filter = $filterForm->toDto();
         }
 
         $pagination = new PaginationDto(
