@@ -4,20 +4,24 @@ declare(strict_types=1);
 
 namespace app\controllers;
 
-use app\models\City;
 use app\repositories\CityRepository;
 use app\repositories\UserRepository;
 use app\requests\UserSignupRequest;
 use app\services\UserService;
+use Sanweb\Taskforce\exception\UserSignupException;
 use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 /**
  * @property mixed $taskRepository
  */
 class UserController extends Controller
 {
+    /**
+     * {@inheritdoc}
+     */
     public function __construct(
         mixed $id,
         mixed $module,
@@ -57,7 +61,12 @@ class UserController extends Controller
         ]);
     }
 
-    public function actionSignup()
+    /**
+     * Registers a new user.
+     *
+     * @throws UserSignupException
+     */
+    public function actionSignup(): Response|string
     {
         $signupForm = new UserSignupRequest();
 

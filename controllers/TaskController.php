@@ -15,6 +15,9 @@ use yii\web\NotFoundHttpException;
 
 class TaskController extends Controller
 {
+    /**
+     * {@inheritdoc}
+     */
     public function __construct(
         mixed $id,
         mixed $module,
@@ -25,6 +28,9 @@ class TaskController extends Controller
         parent::__construct($id, $module, $config);
     }
 
+    /**
+     * Displays the task list.
+     */
     public function actionIndex(): string
     {
         $filterForm = new TaskFilterRequest();
@@ -52,6 +58,8 @@ class TaskController extends Controller
     }
 
     /**
+     * Displays a single task.
+     *
      * @throws NotFoundHttpException
      */
     public function actionView(int $id): string
