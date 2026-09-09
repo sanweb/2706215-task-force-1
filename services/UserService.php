@@ -26,7 +26,7 @@ final class UserService
             $user->city_id = $dto->cityId;
             $user->is_executor = $dto->isExecutor;
 
-            $user->password = Yii::$app->security->generatePasswordHash($dto->password);
+            $user->setPassword($dto->password);
 
             if (!$user->save()) {
                 throw new UserSignupException('Не удалось создать пользователя.');
