@@ -18,6 +18,9 @@ class UserSignupRequest extends Model
     public string|int|null $cityId = null;
     public string|int|bool $isExecutor = false;
 
+    /**
+     * {@inheritdoc}
+     */
     public function rules(): array
     {
         return [
@@ -56,6 +59,9 @@ class UserSignupRequest extends Model
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function attributeLabels(): array
     {
         return [
@@ -68,11 +74,17 @@ class UserSignupRequest extends Model
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function formName(): string
     {
         return 'signup';
     }
 
+    /**
+     * Converts validated request data to a DTO.
+     */
     public function toDto(): UserSignupDto
     {
         return new UserSignupDto(

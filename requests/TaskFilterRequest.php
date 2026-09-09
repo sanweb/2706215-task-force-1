@@ -20,6 +20,9 @@ class TaskFilterRequest extends Model
     public string|int|bool $hasNoBid = false;
     public string $period = '';
 
+    /**
+     * {@inheritdoc}
+     */
     public function rules(): array
     {
         return [
@@ -34,6 +37,9 @@ class TaskFilterRequest extends Model
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function attributeLabels(): array
     {
         return [
@@ -44,11 +50,17 @@ class TaskFilterRequest extends Model
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function formName(): string
     {
         return 'filters';
     }
 
+    /**
+     * Converts validated request data to a DTO.
+     */
     public function toDto(): TaskFilterDto
     {
         return new TaskFilterDto(
