@@ -17,6 +17,14 @@ final class UserRepository
     }
 
     /**
+     * Finds a user by email.
+     */
+    public function findByEmail(string $email): ?User
+    {
+        return User::findOne(['email' => $email]);
+    }
+
+    /**
      * Finds an executor by ID with profile data.
      */
     public function findExecutorById(int $id): ?User

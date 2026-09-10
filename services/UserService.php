@@ -22,7 +22,7 @@ final class UserService
         try {
             $user = new User();
             $user->name = $dto->name;
-            $user->email = mb_strtolower($dto->email);
+            $user->email = $dto->email;
             $user->city_id = $dto->cityId;
             $user->is_executor = $dto->isExecutor;
 

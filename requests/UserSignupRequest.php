@@ -24,12 +24,15 @@ class UserSignupRequest extends Model
     public function rules(): array
     {
         return [
+            [['name', 'email'], 'trim'],
+            ['email', 'filter', 'filter' => 'mb_strtolower'],
+
             [['name', 'email', 'cityId', 'password', 'passwordConfirm'], 'required'],
 
             ['name', 'string', 'min' => 2, 'max' => 128],
 
-            ['email', 'email'],
             ['email', 'string', 'max' => 255],
+            ['email', 'email'],
             [
                 'email',
                 'unique',

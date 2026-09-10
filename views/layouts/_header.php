@@ -5,6 +5,7 @@ declare(strict_types=1);
 /** @var yii\web\View $this */
 
 use yii\helpers\Html;
+use yii\helpers\Url;
 
 $items = [
     [
@@ -38,7 +39,7 @@ $items = [
 ?>
 <header class="page-header">
     <nav class="main-nav">
-        <a href='#' class="header-logo">
+        <a href="<?= Url::to(['site/index']) ?>" class="header-logo">
             <img class="logo-image" src="/img/logotype.png" width=227 height=60 alt="taskforce">
         </a>
         <div class="nav-wrapper">

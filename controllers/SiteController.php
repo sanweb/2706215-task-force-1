@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace app\controllers;
 
 use Yii;
-use app\models\ContactForm;
-use app\models\LoginForm;
-use yii\captcha\CaptchaAction;
+use app\requests\UserLoginRequest;
+use app\services\AuthService;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
-use yii\base\Security;
-use yii\mail\MailerInterface;
 use yii\web\Controller;
 use yii\web\ErrorAction;
 use yii\web\Response;
@@ -24,8 +21,7 @@ class SiteController extends Controller
     public function __construct(
         mixed $id,
         mixed $module,
-        private readonly MailerInterface $mailer,
-        private readonly Security $security,
+        private readonly AuthService $authService,
         array $config = [],
     ) {
         parent::__construct($id, $module, $config);
@@ -76,6 +72,10 @@ class SiteController extends Controller
      */
     public function actionIndex(): string
     {
+        if (!Yii::$app->user->isGuest) {
+            $this->redirect(['task/index']);
+        }
+
         $this->layout = 'landing';
         return $this->render('index');
     }
@@ -91,15 +91,20 @@ class SiteController extends Controller
             return $this->goHome();
         }
 
-        $model = new LoginForm($this->security);
+        $loginRequest = new UserLoginRequest();
 
-        if ($model->load($this->request->post()) && $model->login()) {
-            return $this->goBack();
+        if ($loginRequest->load($this->request->post()) && $loginRequest->validate()) {
+            $user = $this->authService->authenticate($loginRequest->toDto());
+
+            if ($user !== null && Yii::$app->user->login($user)) {
+                return $this->goBack();
+            }
+
+            $loginRequest->addError('password', 'Неверный email или пароль.');
         }
 
-        $model->password = '';
-
-        return $this->render('login', ['model' => $model]);
+        $loginRequest->password = '';
+        return $this->render('login', ['model' => $loginRequest]);
     }
 
     /**
