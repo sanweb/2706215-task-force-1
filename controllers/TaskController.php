@@ -10,10 +10,9 @@ use app\repositories\TaskRepository;
 use app\requests\TaskFilterRequest;
 use Yii;
 use yii\data\ActiveDataProvider;
-use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 
-class TaskController extends Controller
+class TaskController extends AuthorizedController
 {
     /**
      * {@inheritdoc}
