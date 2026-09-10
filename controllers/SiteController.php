@@ -68,16 +68,19 @@ class SiteController extends Controller
     /**
      * Displays homepage.
      *
-     * @return string
+     * @return Response|string
      */
-    public function actionIndex(): string
+    public function actionIndex(): Response|string
     {
         if (!Yii::$app->user->isGuest) {
-            $this->redirect(['task/index']);
+            return $this->redirect(['task/index']);
         }
 
         $this->layout = 'landing';
-        return $this->render('index');
+        return $this->render('index', [
+            'loginRequest' => new UserLoginRequest(),
+            'showLoginModal' => false,
+        ]);
     }
 
     /**
@@ -104,7 +107,12 @@ class SiteController extends Controller
         }
 
         $loginRequest->password = '';
-        return $this->render('login', ['model' => $loginRequest]);
+        $this->layout = 'landing';
+
+        return $this->render('index', [
+            'loginRequest' => $loginRequest,
+            'showLoginModal' => true,
+        ]);
     }
 
     /**

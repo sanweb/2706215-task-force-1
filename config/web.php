@@ -54,10 +54,11 @@ $config = [
             'showScriptName' => false,
             'rules' => [
                 '' => 'site/index',
-                'tasks' => 'task/index',
                 'task/view/<id:\d+>' => 'task/view',
+                'tasks' => 'task/index',
                 'user/view/<id:\d+>' => 'user/view',
                 'signup' => 'user/signup',
+                'login' => 'site/login',
             ],
         ],
         'formatter' => [
