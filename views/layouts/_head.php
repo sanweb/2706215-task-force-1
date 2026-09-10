@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 /** @var yii\web\View $this */
 
-use app\assets\AppAsset;
-
-AppAsset::register($this);
-
 $this->registerCsrfMetaTags();
 $this->registerMetaTag(
     ['charset' => Yii::$app->charset],

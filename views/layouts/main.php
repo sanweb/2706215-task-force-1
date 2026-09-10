@@ -5,10 +5,12 @@ declare(strict_types=1);
 /** @var yii\web\View $this */
 /** @var string $content */
 
+use app\assets\AppAsset;
 use app\widgets\Alert;
 use yii\bootstrap5\Breadcrumbs;
 use yii\helpers\Html;
 
+AppAsset::register($this);
 $this->render('_head');
 ?>
 <?php $this->beginPage() ?>

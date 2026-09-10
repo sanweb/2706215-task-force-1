@@ -18,12 +18,15 @@ use yii\web\Response;
 
 class SiteController extends Controller
 {
+    /**
+     * {@inheritdoc}
+     */
     public function __construct(
-        $id,
-        $module,
+        mixed $id,
+        mixed $module,
         private readonly MailerInterface $mailer,
         private readonly Security $security,
-        $config = [],
+        array $config = [],
     ) {
         parent::__construct($id, $module, $config);
     }
@@ -78,6 +81,7 @@ class SiteController extends Controller
      */
     public function actionIndex(): string
     {
+        $this->layout = 'landing';
         return $this->render('index');
     }
 
