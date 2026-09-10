@@ -4,20 +4,29 @@ declare(strict_types=1);
 
 namespace app\controllers;
 
-use app\repositories\UserRepositoryInterface;
+use app\repositories\CityRepository;
+use app\repositories\TaskRepository;
+use app\repositories\UserRepository;
+use app\requests\UserSignupRequest;
+use app\services\UserService;
+use Sanweb\Taskforce\exception\UserSignupException;
 use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
-/**
- * @property mixed $taskRepository
- */
 class UserController extends Controller
 {
+    /**
+     * {@inheritdoc}
+     */
     public function __construct(
         mixed $id,
         mixed $module,
-        private readonly UserRepositoryInterface $userRepository,
+        private readonly UserRepository $userRepository,
+        private readonly CityRepository $cityRepository,
+        private readonly UserService $userService,
+        private readonly TaskRepository $taskRepository,
         array $config = []
     ) {
         parent::__construct($id, $module, $config);
@@ -30,7 +39,7 @@ class UserController extends Controller
      */
     public function actionView(int $id): string
     {
-        $user = $this->userRepository->findById($id);
+        $user = $this->userRepository->findExecutorById($id);
 
         if ($user === null) {
             throw new NotFoundHttpException('Исполнитель не найден.');
@@ -48,6 +57,29 @@ class UserController extends Controller
         return $this->render('view', [
             'user' => $user,
             'canViewContacts' => $canViewContacts,
+        ]);
+    }
+
+    /**
+     * Registers a new user.
+     *
+     * @throws UserSignupException
+     */
+    public function actionSignup(): Response|string
+    {
+        $signupForm = new UserSignupRequest();
+
+        if ($signupForm->load($this->request->post()) && $signupForm->validate()) {
+            $user = $this->userService->signup($signupForm->toDto());
+
+            Yii::$app->user->login($user);
+
+            return $this->goHome();
+        }
+
+        return $this->render('signup', [
+            'model' => $signupForm,
+            'cities' => $this->cityRepository->findAllForSelect(),
         ]);
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace app\models;
 
+use Sanweb\Taskforce\enum\ExecutorStatus;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 
@@ -79,5 +80,10 @@ class ExecutorProfile extends ActiveRecord
     public function getUser(): ActiveQuery
     {
         return $this->hasOne(User::class, ['id' => 'user_id']);
+    }
+
+    public function getStatusLabel(): string
+    {
+        return ExecutorStatus::from($this->status)->label();
     }
 }

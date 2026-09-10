@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace app\repositories;
+
+use app\models\City;
+
+final class CityRepository
+{
+    /**
+     * Returns cities as an ID-to-name map sorted by name.
+     *
+     * @return array<int, string>
+     */
+    public function findAllForSelect(): array
+    {
+        return City::find()
+            ->select(['name', 'id'])
+            ->orderBy(['name' => SORT_ASC])
+            ->indexBy('id')
+            ->column();
+    }
+}

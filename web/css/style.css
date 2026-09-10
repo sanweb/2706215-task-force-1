@@ -735,6 +735,10 @@ template {
 .bio-info {
   margin-top: 10px; }
 
+.stars-rating {
+    display: flex;
+}
+
 .stars-rating span {
   position: relative; }
 

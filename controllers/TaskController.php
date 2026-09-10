@@ -6,8 +6,8 @@ namespace app\controllers;
 
 use app\dto\PaginationDto;
 use app\dto\TaskFilterDto;
-use app\repositories\CategoryRepositoryInterface;
-use app\repositories\TaskRepositoryInterface;
+use app\repositories\CategoryRepository;
+use app\repositories\TaskRepository;
 use app\requests\TaskFilterRequest;
 use Yii;
 use yii\web\Controller;
@@ -15,16 +15,22 @@ use yii\web\NotFoundHttpException;
 
 class TaskController extends Controller
 {
+    /**
+     * {@inheritdoc}
+     */
     public function __construct(
         mixed $id,
         mixed $module,
-        private readonly TaskRepositoryInterface $taskRepository,
-        private readonly CategoryRepositoryInterface $categoryRepository,
+        private readonly TaskRepository $taskRepository,
+        private readonly CategoryRepository $categoryRepository,
         array $config = []
     ) {
         parent::__construct($id, $module, $config);
     }
 
+    /**
+     * Displays the task list.
+     */
     public function actionIndex(): string
     {
         $filterForm = new TaskFilterRequest();
@@ -33,14 +39,7 @@ class TaskController extends Controller
         $filter = new TaskFilterDto();
 
         if ($filterForm->validate()) {
-            $filter = new TaskFilterDto(
-                categories: $filterForm->categories,
-                isRemote: (bool) $filterForm->isRemote,
-                hasNoBid: (bool) $filterForm->hasNoBid,
-                createdAfter: $filterForm->period !== ''
-                    ? (strtotime($filterForm->period) ?: null)
-                    : null,
-            );
+            $filter = $filterForm->toDto();
         }
 
         $pagination = new PaginationDto(
@@ -59,11 +58,13 @@ class TaskController extends Controller
     }
 
     /**
+     * Displays a single task.
+     *
      * @throws NotFoundHttpException
      */
     public function actionView(int $id): string
     {
-        $task = $this->taskRepository->findById($id);
+        $task = $this->taskRepository->findDetailsById($id);
 
         if ($task === null) {
             throw new NotFoundHttpException('Задание не найдено.');

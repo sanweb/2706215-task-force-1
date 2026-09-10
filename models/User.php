@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace app\models;
 
 use DateTimeImmutable;
+use Yii;
 use yii\base\InvalidConfigException;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
@@ -37,6 +38,14 @@ use yii\web\IdentityInterface;
  */
 class User extends ActiveRecord implements IdentityInterface
 {
+    /**
+     * Stores a secure hash of the given plain-text password.
+     */
+    public function setPassword(string $plainPassword): void
+    {
+        $this->password = Yii::$app->security->generatePasswordHash($plainPassword);
+    }
+
     /**
      * {@inheritdoc}
      */

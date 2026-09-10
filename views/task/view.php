@@ -34,7 +34,7 @@ use yii\helpers\Url;
                 <a href="<?= Url::to(['user/view', 'id' => $bid->user_id]) ?>" class="link link--block link--big"><?= Html::encode($bid->user->name) ?></a>
                 <div class="response-wrapper">
                     <?= RatingWidget::widget([
-                        'value' => $bid->user->rating,
+                        'value' => $bid->user->executorStats->avg_score ?? 0,
                         'size' => RatingWidget::SIZE_SMALL,
                     ]) ?>
                     <p class="reviews">

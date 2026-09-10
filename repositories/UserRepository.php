@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace app\repositories;
 
 use app\models\User;
-use Override;
 
-final class UserRepository implements UserRepositoryInterface
+final class UserRepository
 {
-    #[Override]
+    /**
+     * Finds a user by ID.
+     */
     public function findById(int $id): ?User
     {
         return User::findOne($id);
     }
 
-    #[Override]
+    /**
+     * Finds an executor by ID with profile data.
+     */
     public function findExecutorById(int $id): ?User
     {
         return User::find()
@@ -28,7 +31,8 @@ final class UserRepository implements UserRepositoryInterface
                 'categories',
                 'executorProfile',
                 'executorStats',
-                'receivedReviews',
+                'receivedReviews.customer',
+                'receivedReviews.task',
             ])
             ->one();
     }
