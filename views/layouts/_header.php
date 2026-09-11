@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 /** @var yii\web\View $this */
 
-use yii\bootstrap5\Nav;
-use yii\bootstrap5\NavBar;
 use yii\helpers\Html;
+use yii\helpers\Url;
 
 $items = [
     [
@@ -40,7 +39,7 @@ $items = [
 ?>
 <header class="page-header">
     <nav class="main-nav">
-        <a href='#' class="header-logo">
+        <a href="<?= Url::to(['site/index']) ?>" class="header-logo">
             <img class="logo-image" src="/img/logotype.png" width=227 height=60 alt="taskforce">
         </a>
         <div class="nav-wrapper">
@@ -60,12 +59,15 @@ $items = [
             </ul>
         </div>
     </nav>
+    <?php if (!Yii::$app->user->isGuest): ?>
     <div class="user-block">
         <a href="#">
             <img class="user-photo" src="/img/man-glasses.png" width="55" height="55" alt="Аватар">
         </a>
         <div class="user-menu">
-            <p class="user-name">Василий</p>
+            <p class="user-name">
+                <?= Html::encode(Yii::$app->user->identity?->name ?? '') ?>
+            </p>
             <div class="popup-head">
                 <ul class="popup-menu">
                     <li class="menu-item">
@@ -75,11 +77,15 @@ $items = [
                         <a href="#" class="link">Связаться с нами</a>
                     </li>
                     <li class="menu-item">
-                        <a href="#" class="link">Выход из системы</a>
+                        <?= Html::a('Выход из системы', ['/site/logout'], [
+                            'class' => 'link',
+                            'data-method' => 'post',
+                        ]) ?>
                     </li>
 
                 </ul>
             </div>
         </div>
     </div>
+    <?php endif; ?>
 </header>

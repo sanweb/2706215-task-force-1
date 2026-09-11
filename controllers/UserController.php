@@ -11,12 +11,34 @@ use app\requests\UserSignupRequest;
 use app\services\UserService;
 use Sanweb\Taskforce\exception\UserSignupException;
 use Yii;
-use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
-class UserController extends Controller
+class UserController extends AuthorizedController
 {
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors(): array
+    {
+        $behaviors = parent::behaviors();
+
+        $rules = [
+            [
+                'allow' => true,
+                'actions' => ['signup'],
+                'roles' => ['?'],
+            ],
+        ];
+
+        $behaviors['access']['rules'] = array_merge(
+            $rules,
+            $behaviors['access']['rules'],
+        );
+
+        return $behaviors;
+    }
+
     /**
      * {@inheritdoc}
      */

@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace app\controllers;
 
-use app\dto\PaginationDto;
 use app\dto\TaskFilterDto;
 use app\repositories\CategoryRepository;
 use app\repositories\TaskRepository;
 use app\requests\TaskFilterRequest;
 use Yii;
-use yii\web\Controller;
+use yii\data\ActiveDataProvider;
 use yii\web\NotFoundHttpException;
 
-class TaskController extends Controller
+class TaskController extends AuthorizedController
 {
     /**
      * {@inheritdoc}
@@ -42,18 +41,19 @@ class TaskController extends Controller
             $filter = $filterForm->toDto();
         }
 
-        $pagination = new PaginationDto(
-            page: max(1, (int) Yii::$app->request->get('page', 1)),
-            pageSize: (int) (Yii::$app->params['pagination']['tasksPageSize'] ?? PaginationDto::DEFAULT_PAGE_SIZE),
-        );
-
-        $result = $this->taskRepository->findNew($filter, $pagination);
+        $dataProvider = new ActiveDataProvider([
+            'query' => $this->taskRepository->findNewQuery($filter),
+            'pagination' => [
+                'pageSize' => (int) (Yii::$app->params['pagination']['tasksPageSize'] ?? 5),
+                'pageSizeLimit' => false,
+            ],
+        ]);
 
         return $this->render('index', [
-            'tasks' => $result->tasks,
-            'pagination' => $result->pagination,
+            'tasks' => $dataProvider->models,
+            'pagination' => $dataProvider->pagination,
             'categories' => $this->categoryRepository->findAll(),
-            'filterForm' => $filterForm
+            'filterForm' => $filterForm,
         ]);
     }
 

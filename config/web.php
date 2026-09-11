@@ -53,10 +53,12 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
-                'tasks' => 'task/index',
+                '' => 'site/index',
                 'task/view/<id:\d+>' => 'task/view',
+                'tasks' => 'task/index',
                 'user/view/<id:\d+>' => 'user/view',
                 'signup' => 'user/signup',
+                'login' => 'site/login',
             ],
         ],
         'formatter' => [

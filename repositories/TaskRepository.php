@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace app\repositories;
 
-use app\dto\PaginationDto;
 use app\dto\TaskFilterDto;
-use app\dto\TaskSearchResultDto;
 use app\models\Task;
 use Sanweb\Taskforce\enum\TaskStatus;
-use yii\data\Pagination;
+use yii\db\ActiveQuery;
 
 final class TaskRepository
 {
     /**
-     * Finds new tasks matching the filter with pagination.
+     * Builds a query for new tasks matching the filter.
+     *
+     * @return ActiveQuery<Task>
      */
-    public function findNew(TaskFilterDto $filter, PaginationDto $pagination): TaskSearchResultDto
+    public function findNewQuery(TaskFilterDto $filter): ActiveQuery
     {
         $query = Task::find()
             ->where(['task.status' => TaskStatus::New->value])
@@ -37,21 +37,7 @@ final class TaskRepository
             $query->andWhere(['>=', 'task.created_at', $filter->createdAfter]);
         }
 
-        $pagination = new Pagination([
-            'totalCount' => $query->count(),
-            'pageSize' => $pagination->pageSize,
-            'page' => $pagination->page - 1,
-        ]);
-
-        $tasks = $query
-            ->offset($pagination->offset)
-            ->limit($pagination->limit)
-            ->all();
-
-        return new TaskSearchResultDto(
-            tasks: $tasks,
-            pagination: $pagination,
-        );
+        return $query;
     }
 
     /**

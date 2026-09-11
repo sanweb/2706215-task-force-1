@@ -24,17 +24,19 @@ use yii\web\IdentityInterface;
  * @property int $is_executor
  * @property string $created_at
  * @property string|null $updated_at
- * @property Bid[] $bids
- * @property Category[] $categories
- * @property City|null $city
- * @property ExecutorProfile|null $executorProfile
- * @property ExecutorSpecialization[] $executorSpecializations
- * @property ExecutorStatsView|null $executorStats
- * @property Review[] $sentReviews
- * @property Review[] $receivedReviews
- * @property Task[] $customerTasks
- * @property Task[] $executorTasks
- * @property Task[] $bidTasks
+ *
+ * @property-read Bid[] $bids
+ * @property-read Category[] $categories
+ * @property-read City|null $city
+ * @property-read ExecutorProfile|null $executorProfile
+ * @property-read ExecutorSpecialization[] $executorSpecializations
+ * @property-read ExecutorStatsView|null $executorStats
+ * @property-read Review[] $sentReviews
+ * @property-read Review[] $receivedReviews
+ * @property-read Task[] $customerTasks
+ * @property-read Task[] $executorTasks
+ * @property-read Task[] $bidTasks
+ * @property-read int|null $age
  */
 class User extends ActiveRecord implements IdentityInterface
 {
@@ -61,22 +63,6 @@ class User extends ActiveRecord implements IdentityInterface
     {
         // return static::findOne(['access_token' => $token]);
         return null;
-    }
-
-    /**
-     * @deprecated Use findByEmail() instead.
-     */
-    public static function findByUsername(string $username): ?static
-    {
-        return null;
-    }
-
-    /**
-     * Finds user by email.
-     */
-    public static function findByEmail(string $email): ?static
-    {
-        return static::findOne(['email' => $email]);
     }
 
     /**
@@ -256,7 +242,9 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     /**
-     * @throws \DateMalformedStringException
+     * Returns the user's age in full years, or null when the birthday is not set.
+     *
+     * @throws \DateMalformedStringException If the birthday contains an invalid date.
      */
     public function getAge(): ?int
     {
