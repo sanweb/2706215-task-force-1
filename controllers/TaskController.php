@@ -7,10 +7,13 @@ namespace app\controllers;
 use app\dto\TaskFilterDto;
 use app\repositories\CategoryRepository;
 use app\repositories\TaskRepository;
+use app\requests\TaskCreateRequest;
 use app\requests\TaskFilterRequest;
+use Sanweb\Taskforce\exception\TaskCreateException;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 class TaskController extends AuthorizedController
 {
@@ -72,6 +75,27 @@ class TaskController extends AuthorizedController
 
         return $this->render('view', [
             'task' => $task,
+        ]);
+    }
+
+    /**
+     * Creates a new task and redirects to its details page.
+     *
+     * @throws TaskCreateException
+     */
+    public function actionCreate(): Response|string
+    {
+        $form = new TaskCreateRequest();
+
+        if ($form->load($this->request->post()) && $form->validate()) {
+            $task = $this->taskRepository->create($form->toDto());
+
+            return $this->redirect(['task/view', 'id' => $task->id]);
+        }
+
+        return $this->render('create', [
+            'model' => $form,
+            'categories' => $this->categoryRepository->findAllForSelect(),
         ]);
     }
 }
