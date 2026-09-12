@@ -73,7 +73,7 @@ use yii\helpers\Url;
             <dd><?= Html::encode($task->statusLabel) ?></dd>
         </dl>
     </div>
-    <?php if ($task->attachments !== []): ?>
+    <?php if (!empty($task->attachments)): ?>
         <div class="right-card white file-card">
             <h4 class="head-card">Файлы задания</h4>
             <ul class="enumeration-list">

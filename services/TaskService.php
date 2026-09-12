@@ -42,23 +42,9 @@ final class TaskService
                 throw new TaskCreateException('Не удалось создать задание.');
             }
 
-            if ($files !== []) {
+            if (!empty($files)) {
                 $attachmentDirectory = (string) $task->id;
-
-                foreach ($files as $file) {
-                    $storedFile = $this->fileStorage->store($file, $attachmentDirectory);
-
-                    $attachment = new Attachment();
-                    $attachment->task_id = $task->id;
-                    $attachment->file_path = $storedFile->filePath;
-                    $attachment->original_name = $storedFile->originalName;
-                    $attachment->mime_type = $storedFile->mimeType;
-                    $attachment->size_bytes = $storedFile->sizeBytes;
-
-                    if (!$attachment->save()) {
-                        throw new TaskCreateException('Не удалось сохранить данные файла задания.');
-                    }
-                }
+                $this->saveAttachments($task, $files);
             }
 
             $transaction->commit();
@@ -78,6 +64,27 @@ final class TaskService
             }
 
             throw new TaskCreateException('Не удалось создать задание.', 0, $exception);
+        }
+    }
+
+    /**
+     * Saves task files and their metadata.
+     */
+    private function saveAttachments(Task $task, array $files): void
+    {
+        foreach ($files as $file) {
+            $storedFile = $this->fileStorage->store($file, (string) $task->id);
+
+            $attachment = new Attachment();
+            $attachment->task_id = $task->id;
+            $attachment->file_path = $storedFile->filePath;
+            $attachment->original_name = $storedFile->originalName;
+            $attachment->mime_type = $storedFile->mimeType;
+            $attachment->size_bytes = $storedFile->sizeBytes;
+
+            if (!$attachment->save()) {
+                throw new TaskCreateException('Не удалось сохранить данные файла задания.');
+            }
         }
     }
 }
