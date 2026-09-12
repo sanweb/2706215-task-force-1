@@ -22,6 +22,7 @@ class TaskCreateRequest extends Model
     public string $expireDate = '';
     public string|null $location = null;
     public string|int|null $cityId = null;
+    public array $files = [];
 
     /**
      * {@inheritdoc}
@@ -37,6 +38,9 @@ class TaskCreateRequest extends Model
             ['title', 'string', 'min' => 5, 'max' => 255],
             ['description', 'string'],
             ['location', 'string', 'max' => 255],
+
+            ['files', 'file', 'skipOnEmpty' => true, 'maxFiles' => 0],
+            ['files', 'validateFileNames'],
 
             ['budget', 'integer', 'min' => 1],
 
@@ -78,6 +82,7 @@ class TaskCreateRequest extends Model
             'budget' => 'Бюджет',
             'expireDate' => 'Срок исполнения',
             'location' => 'Локация',
+            'files' => 'Файлы',
         ];
     }
 
@@ -87,6 +92,20 @@ class TaskCreateRequest extends Model
     public function formName(): string
     {
         return 'add-task';
+    }
+
+    /**
+     * Validates uploaded file names against the database column length.
+     */
+    public function validateFileNames(string $attribute): void
+    {
+        foreach ($this->files as $file) {
+            if (mb_strlen(basename(str_replace('\\', '/', $file->name))) > 255) {
+                $this->addError($attribute, 'Имя файла не должно превышать 255 символов.');
+
+                return;
+            }
+        }
     }
 
     /**

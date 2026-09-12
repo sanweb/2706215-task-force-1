@@ -55,6 +55,7 @@ $config = [
             'rules' => [
                 '' => 'site/index',
                 'task/view/<id:\d+>' => 'task/view',
+                'task/file/<id:\d+>' => 'task/download',
                 'task/create' => 'task/create',
                 'tasks' => 'task/index',
                 'user/view/<id:\d+>' => 'user/view',

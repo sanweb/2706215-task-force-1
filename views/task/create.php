@@ -15,7 +15,10 @@ $this->params['mainClass'] = 'main-content main-content--center';
 
 <div class="add-task-form regular-form">
     <?php $form = ActiveForm::begin([
-        'options' => ['class' => ''],
+        'options' => [
+            'class' => '',
+            'enctype' => 'multipart/form-data',
+        ],
         'fieldConfig' => [
             'options' => ['class' => 'form-group'],
             'labelOptions' => ['class' => 'control-label'],
@@ -62,10 +65,10 @@ $this->params['mainClass'] = 'main-content main-content--center';
         )->textInput() ?>
     </div>
 
-    <p class="form-label">Файлы</p>
-    <div class="new-file">
-        Добавить новый файл
-    </div>
+    <?= $form->field($model, 'files', [
+        'template' => '{label}<div class="new-file">{input}</div>{error}',
+        'labelOptions' => ['class' => 'form-label'],
+    ])->fileInput(['multiple' => true]) ?>
 
     <?= Html::submitInput('Опубликовать', ['class' => 'button button--blue']) ?>
 
