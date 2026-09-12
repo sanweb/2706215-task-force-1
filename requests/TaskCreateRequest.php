@@ -7,6 +7,7 @@ namespace app\requests;
 use app\dto\TaskCreateDto;
 use app\models\Category;
 use app\models\City;
+use app\validators\FileNameValidator;
 use DateTimeImmutable;
 use yii\base\Model;
 
@@ -40,7 +41,7 @@ class TaskCreateRequest extends Model
             ['location', 'string', 'max' => 255],
 
             ['files', 'file', 'skipOnEmpty' => true, 'maxFiles' => 0],
-            ['files', 'validateFileNames'],
+            ['files', FileNameValidator::class],
 
             ['budget', 'integer', 'min' => 1],
 
@@ -92,20 +93,6 @@ class TaskCreateRequest extends Model
     public function formName(): string
     {
         return 'add-task';
-    }
-
-    /**
-     * Validates uploaded file names against the database column length.
-     */
-    public function validateFileNames(string $attribute): void
-    {
-        foreach ($this->files as $file) {
-            if (mb_strlen(basename(str_replace('\\', '/', $file->name))) > 255) {
-                $this->addError($attribute, 'Имя файла не должно превышать 255 символов.');
-
-                return;
-            }
-        }
     }
 
     /**
